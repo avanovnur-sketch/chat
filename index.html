@@ -32,16 +32,26 @@
   header {
     background: #4b3f72;
     color: #fff;
-    padding: 16px 20px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
   header h1 {
-    font-size: 18px;
+    font-size: 16px;
     margin: 0;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   #onlineDot {
@@ -51,13 +61,36 @@
     background: #4caf50;
     display: inline-block;
     margin-right: 6px;
+    flex-shrink: 0;
   }
 
   .status {
-    font-size: 12px;
+    font-size: 11px;
     opacity: 0.85;
     display: flex;
     align-items: center;
+  }
+
+  .headerRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .avatarBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: #8a7fc2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #fff;
   }
 
   /* Экран входа (ник) */
@@ -68,8 +101,9 @@
     align-items: center;
     justify-content: center;
     padding: 30px;
-    gap: 14px;
+    gap: 12px;
     text-align: center;
+    overflow-y: auto;
   }
 
   #loginScreen h2 {
@@ -80,11 +114,36 @@
   #loginScreen p {
     color: #888;
     font-size: 14px;
-    margin: 0 0 10px 0;
+    margin: 0 0 6px 0;
   }
 
-  #nickInput {
+  .avatarPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 320px;
+  }
+
+  .avatarOpt {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.1s, border-color 0.1s;
+  }
+
+  .avatarOpt:hover { transform: scale(1.08); }
+  .avatarOpt.selected { border-color: #333; }
+
+  #nickInput, #statusInput {
     width: 100%;
+    max-width: 320px;
     padding: 12px 14px;
     border-radius: 10px;
     border: 1px solid #ddd;
@@ -92,12 +151,13 @@
     outline: none;
   }
 
-  #nickInput:focus {
+  #nickInput:focus, #statusInput:focus {
     border-color: #667eea;
   }
 
-  #joinBtn {
+  #joinBtn, .primaryBtn {
     width: 100%;
+    max-width: 320px;
     padding: 12px;
     border: none;
     border-radius: 10px;
@@ -109,7 +169,7 @@
     transition: background 0.15s;
   }
 
-  #joinBtn:hover { background: #5a67d8; }
+  #joinBtn:hover, .primaryBtn:hover { background: #5a67d8; }
 
   /* Чат */
   #chatScreen {
@@ -125,12 +185,39 @@
     padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
     background: #f4f5fb;
   }
 
+  .msgRow {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 85%;
+  }
+
+  .msgRow.mine {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+
+  .msgRow.theirs {
+    align-self: flex-start;
+  }
+
+  .rowAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
   .msg {
-    max-width: 75%;
     padding: 9px 13px;
     border-radius: 14px;
     font-size: 14.5px;
@@ -155,15 +242,13 @@
     text-align: right;
   }
 
-  .msg.mine {
-    align-self: flex-end;
+  .msgRow.mine .msg {
     background: #667eea;
     color: #fff;
     border-bottom-right-radius: 4px;
   }
 
-  .msg.theirs {
-    align-self: flex-start;
+  .msgRow.theirs .msg {
     background: #fff;
     color: #333;
     border: 1px solid #e7e7ef;
@@ -220,6 +305,57 @@
     min-height: 16px;
   }
 
+  /* Модалка профиля */
+  .modalOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 16px;
+  }
+
+  .modalOverlay.open { display: flex; }
+
+  .modalBox {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .modalBox h3 {
+    margin: 0;
+    color: #333;
+  }
+
+  .modalRow {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .secondaryBtn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .secondaryBtn:hover { background: #f5f5f5; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 </style>
@@ -228,15 +364,27 @@
 
 <div class="app">
   <header>
-    <h1>💬 Чат друзей</h1>
-    <span class="status"><span id="onlineDot"></span><span id="statusText">подключение…</span></span>
+    <div class="headerLeft">
+      <div>
+        <h1>💬 Чат друзей</h1>
+        <span class="status"><span id="onlineDot"></span><span id="statusText">подключение…</span></span>
+      </div>
+    </div>
+    <div class="headerRight">
+      <div class="avatarBtn" id="headerAvatarBtn" title="Профиль">🙂</div>
+    </div>
   </header>
 
-  <!-- Экран входа -->
+  <!-- Экран входа (создание профиля) -->
   <div id="loginScreen">
     <h2>Привет! 👋</h2>
-    <p>Введи своё имя, чтобы зайти в чат</p>
+    <p>Создай свой профиль, чтобы зайти в чат</p>
+
+    <div class="avatarPicker" id="loginAvatarPicker"></div>
+
     <input id="nickInput" type="text" placeholder="Твоё имя" maxlength="20" autocomplete="off">
+    <input id="statusInput" type="text" placeholder="Статус (необязательно)" maxlength="40" autocomplete="off">
+
     <div class="err" id="loginErr"></div>
     <button id="joinBtn">Войти в чат</button>
   </div>
@@ -253,6 +401,21 @@
   </div>
 </div>
 
+<!-- Модалка профиля -->
+<div class="modalOverlay" id="profileModal">
+  <div class="modalBox">
+    <h3>Мой профиль</h3>
+    <div class="avatarPicker" id="editAvatarPicker"></div>
+    <input id="editNickInput" type="text" placeholder="Твоё имя" maxlength="20" autocomplete="off">
+    <input id="editStatusInput" type="text" placeholder="Статус (необязательно)" maxlength="40" autocomplete="off">
+    <div class="err" id="editErr"></div>
+    <button class="primaryBtn" id="saveProfileBtn">Сохранить</button>
+    <div class="modalRow">
+      <button class="secondaryBtn" id="closeProfileBtn">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   // ==== Firebase ====
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -260,6 +423,8 @@
     getFirestore,
     collection,
     addDoc,
+    doc,
+    setDoc,
     query,
     orderBy,
     limit,
@@ -280,10 +445,64 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // ==== Аватары ====
+  const AVATARS = [
+    { emoji: "🙂", color: "#667eea" },
+    { emoji: "😎", color: "#f6ad55" },
+    { emoji: "🐱", color: "#f56565" },
+    { emoji: "🐶", color: "#48bb78" },
+    { emoji: "🦊", color: "#ed8936" },
+    { emoji: "🐼", color: "#4a5568" },
+    { emoji: "🌟", color: "#ecc94b" },
+    { emoji: "🍀", color: "#38a169" },
+    { emoji: "🔥", color: "#e53e3e" },
+    { emoji: "🌈", color: "#9f7aea" },
+    { emoji: "👾", color: "#805ad5" },
+    { emoji: "🐸", color: "#48bb78" }
+  ];
+
+  // ==== Профиль пользователя (локально) ====
+  function getOrCreateUserId() {
+    let id = localStorage.getItem("chatUserId");
+    if (!id) {
+      id = "u_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem("chatUserId", id);
+    }
+    return id;
+  }
+
+  const myUserId = getOrCreateUserId();
+
+  let myProfile = {
+    name: localStorage.getItem("chatNick") || "",
+    status: localStorage.getItem("chatStatus") || "",
+    avatarIdx: parseInt(localStorage.getItem("chatAvatarIdx") || "0", 10)
+  };
+
+  function saveProfileLocal() {
+    localStorage.setItem("chatNick", myProfile.name);
+    localStorage.setItem("chatStatus", myProfile.status);
+    localStorage.setItem("chatAvatarIdx", String(myProfile.avatarIdx));
+  }
+
+  async function saveProfileRemote() {
+    try {
+      await setDoc(doc(db, "users", myUserId), {
+        name: myProfile.name,
+        status: myProfile.status,
+        avatarIdx: myProfile.avatarIdx,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Не удалось сохранить профиль в Firestore:", err);
+    }
+  }
+
   // ==== DOM ====
   const loginScreen = document.getElementById("loginScreen");
   const chatScreen = document.getElementById("chatScreen");
   const nickInput = document.getElementById("nickInput");
+  const statusInput = document.getElementById("statusInput");
   const joinBtn = document.getElementById("joinBtn");
   const loginErr = document.getElementById("loginErr");
   const messagesEl = document.getElementById("messages");
@@ -292,28 +511,96 @@
   const sendBtn = document.getElementById("sendBtn");
   const statusText = document.getElementById("statusText");
   const onlineDot = document.getElementById("onlineDot");
+  const headerAvatarBtn = document.getElementById("headerAvatarBtn");
 
-  let myName = localStorage.getItem("chatNick") || "";
+  const loginAvatarPicker = document.getElementById("loginAvatarPicker");
+  const editAvatarPicker = document.getElementById("editAvatarPicker");
+  const profileModal = document.getElementById("profileModal");
+  const editNickInput = document.getElementById("editNickInput");
+  const editStatusInput = document.getElementById("editStatusInput");
+  const editErr = document.getElementById("editErr");
+  const saveProfileBtn = document.getElementById("saveProfileBtn");
+  const closeProfileBtn = document.getElementById("closeProfileBtn");
 
-  if (myName) {
-    nickInput.value = myName;
+  function buildAvatarPicker(container, selectedIdx, onSelect) {
+    container.innerHTML = "";
+    AVATARS.forEach((a, idx) => {
+      const el = document.createElement("div");
+      el.className = "avatarOpt" + (idx === selectedIdx ? " selected" : "");
+      el.style.background = a.color;
+      el.textContent = a.emoji;
+      el.addEventListener("click", () => {
+        container.querySelectorAll(".avatarOpt").forEach(o => o.classList.remove("selected"));
+        el.classList.add("selected");
+        onSelect(idx);
+      });
+      container.appendChild(el);
+    });
   }
 
-  function enterChat(name) {
-    myName = name.trim();
-    if (!myName) {
+  let loginSelectedAvatar = myProfile.avatarIdx || 0;
+  let editSelectedAvatar = myProfile.avatarIdx || 0;
+
+  buildAvatarPicker(loginAvatarPicker, loginSelectedAvatar, (idx) => loginSelectedAvatar = idx);
+
+  if (myProfile.name) {
+    nickInput.value = myProfile.name;
+    statusInput.value = myProfile.status;
+  }
+
+  function updateHeaderAvatar() {
+    const a = AVATARS[myProfile.avatarIdx] || AVATARS[0];
+    headerAvatarBtn.textContent = a.emoji;
+    headerAvatarBtn.style.background = a.color;
+  }
+
+  function enterChat(name, status, avatarIdx) {
+    const trimmed = name.trim();
+    if (!trimmed) {
       loginErr.textContent = "Введите имя";
       return;
     }
-    localStorage.setItem("chatNick", myName);
+    myProfile = { name: trimmed, status: status.trim(), avatarIdx };
+    saveProfileLocal();
+    saveProfileRemote();
+    updateHeaderAvatar();
     loginScreen.style.display = "none";
     chatScreen.style.display = "flex";
     startListening();
   }
 
-  joinBtn.addEventListener("click", () => enterChat(nickInput.value));
+  joinBtn.addEventListener("click", () => enterChat(nickInput.value, statusInput.value, loginSelectedAvatar));
   nickInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enterChat(nickInput.value);
+    if (e.key === "Enter") enterChat(nickInput.value, statusInput.value, loginSelectedAvatar);
+  });
+
+  // ==== Модалка профиля ====
+  function openProfileModal() {
+    editNickInput.value = myProfile.name;
+    editStatusInput.value = myProfile.status;
+    editSelectedAvatar = myProfile.avatarIdx;
+    editErr.textContent = "";
+    buildAvatarPicker(editAvatarPicker, editSelectedAvatar, (idx) => editSelectedAvatar = idx);
+    profileModal.classList.add("open");
+  }
+
+  headerAvatarBtn.addEventListener("click", openProfileModal);
+  closeProfileBtn.addEventListener("click", () => profileModal.classList.remove("open"));
+  profileModal.addEventListener("click", (e) => {
+    if (e.target === profileModal) profileModal.classList.remove("open");
+  });
+
+  saveProfileBtn.addEventListener("click", () => {
+    const trimmed = editNickInput.value.trim();
+    if (!trimmed) {
+      editErr.textContent = "Введите имя";
+      return;
+    }
+    myProfile = { name: trimmed, status: editStatusInput.value.trim(), avatarIdx: editSelectedAvatar };
+    saveProfileLocal();
+    saveProfileRemote();
+    updateHeaderAvatar();
+    profileModal.classList.remove("open");
   });
 
   // ==== Отправка сообщений ====
@@ -328,7 +615,9 @@
     try {
       await addDoc(messagesRef, {
         text,
-        author: myName,
+        authorId: myUserId,
+        author: myProfile.name,
+        avatarIdx: myProfile.avatarIdx,
         createdAt: serverTimestamp()
       });
       msgInput.value = "";
@@ -374,20 +663,33 @@
   }
 
   function renderMessage(data) {
-    const div = document.createElement("div");
-    const mine = data.author === myName;
-    div.className = "msg " + (mine ? "mine" : "theirs");
+    const mine = data.authorId === myUserId;
+    const avatar = AVATARS[data.avatarIdx] ?? AVATARS[0];
+
+    const row = document.createElement("div");
+    row.className = "msgRow " + (mine ? "mine" : "theirs");
+
+    const avatarEl = document.createElement("div");
+    avatarEl.className = "rowAvatar";
+    avatarEl.style.background = avatar.color;
+    avatarEl.textContent = avatar.emoji;
+
+    const bubble = document.createElement("div");
+    bubble.className = "msg";
 
     const time = data.createdAt?.toDate
       ? data.createdAt.toDate().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })
       : "";
 
-    div.innerHTML = `
+    bubble.innerHTML = `
       ${mine ? "" : `<span class="author">${escapeHtml(data.author || "Аноним")}</span>`}
       ${escapeHtml(data.text || "")}
       <span class="time">${time}</span>
     `;
-    messagesEl.appendChild(div);
+
+    row.appendChild(avatarEl);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
   }
 
   function escapeHtml(str) {
@@ -395,6 +697,8 @@
     d.textContent = str;
     return d.innerHTML;
   }
+
+  updateHeaderAvatar();
 </script>
 
 </body>
