@@ -3,9 +3,6 @@ import {
   getFirestore, collection, addDoc, doc, setDoc,
   query, orderBy, limit, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBhImSZoiZAwGHll_QcBgTls-sjmpmg1S8",
@@ -19,7 +16,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 const AVATARS = [
   { emoji: "🙂", color: "#667eea" }, { emoji: "😎", color: "#f6ad55" },
@@ -322,8 +318,11 @@ msgForm.addEventListener("submit", async function (e) {
   }
 });
 
-// ==== Фото: сжатие на клиенте и загрузка в Firebase Storage ====
-function compressImage(file, maxSize, quality) {
+// ==== Фото: сжатие на клиенте и хранение как base64 прямо в Firestore ====
+// (Firebase Storage требует платный план Blaze, поэтому обходимся без него —
+// Firestore на бесплатном плане работает, но лимит документа 1 МБ,
+// поэтому фото сильно сжимаем: до 700px и качество 0.55)
+function compressImageToDataUrl(file, maxSize, quality) {
   return new Promise(function (resolve, reject) {
     const img = new Image();
     const reader = new FileReader();
@@ -339,9 +338,7 @@ function compressImage(file, maxSize, quality) {
         canvas.width = w;
         canvas.height = h;
         canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        canvas.toBlob(function (blob) {
-          if (blob) resolve(blob); else reject(new Error("Не удалось сжать фото"));
-        }, "image/jpeg", quality);
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -362,26 +359,30 @@ fileInput.addEventListener("change", async function () {
 
   attachBtn.disabled = true;
   sendBtn.disabled = true;
-  uploadStatus.textContent = "Загрузка фото…";
+  uploadStatus.textContent = "Сжимаю фото…";
 
   try {
-    const blob = await compressImage(file, 1280, 0.8);
-    const convId = getConversationId(myUserId, currentContactId);
-    const path = "conversations/" + convId + "/" + Date.now() + "_" + Math.random().toString(36).slice(2) + ".jpg";
-    const fileRef = storageRef(storage, path);
-    await uploadBytes(fileRef, blob, { contentType: "image/jpeg" });
-    const url = await getDownloadURL(fileRef);
+    const dataUrl = await compressImageToDataUrl(file, 700, 0.55);
 
+    // Firestore не примет документ тяжелее ~1 МБ — проверяем заранее
+    if (dataUrl.length > 900000) {
+      uploadStatus.textContent = "Фото слишком большое даже после сжатия";
+      setTimeout(function () { uploadStatus.textContent = ""; }, 3000);
+      return;
+    }
+
+    uploadStatus.textContent = "Отправка фото…";
+    const convId = getConversationId(myUserId, currentContactId);
     const messagesRef = collection(db, "conversations", convId, "messages");
     await addDoc(messagesRef, {
-      imageUrl: url,
+      imageData: dataUrl,
       authorId: myUserId,
       createdAt: serverTimestamp()
     });
     uploadStatus.textContent = "";
   } catch (err) {
-    console.error("Ошибка загрузки фото:", err);
-    uploadStatus.textContent = "Не удалось загрузить фото";
+    console.error("Ошибка отправки фото:", err);
+    uploadStatus.textContent = "Не удалось отправить фото";
     setTimeout(function () { uploadStatus.textContent = ""; }, 3000);
   } finally {
     attachBtn.disabled = false;
@@ -410,12 +411,13 @@ function renderMessage(data) {
     time = data.createdAt.toDate().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
   }
 
-  if (data.imageUrl) {
+  if (data.imageData) {
     bubble.innerHTML =
-      '<img class="msgImage" src="' + data.imageUrl + '" alt="фото">' +
+      '<img class="msgImage" src="' + data.imageData + '" alt="фото">' +
       '<span class="imgTime">' + time + '</span>';
     bubble.querySelector("img").addEventListener("click", function () {
-      window.open(data.imageUrl, "_blank");
+      const w = window.open("");
+      if (w) w.document.write('<img src="' + data.imageData + '" style="max-width:100%">');
     });
   } else {
     bubble.innerHTML = escapeHtml(data.text || "") + '<span class="time">' + time + '</span>';
