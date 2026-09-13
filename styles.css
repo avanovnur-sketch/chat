@@ -5,22 +5,19 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 body {
-  background: #2b2b2b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
+  background: #ededed;
   min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
 }
 
+/* Приложение занимает весь экран целиком — ни рамки, ни центрированного окна */
 .app {
   width: 100%;
-  max-width: 420px;
+  height: 100vh;
+  height: 100dvh;
   background: #ededed;
-  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-  height: 82vh;
   position: relative;
 }
 
@@ -30,6 +27,113 @@ body {
   height: 100%;
 }
 .screen.active { display: flex; }
+
+/* ==== Постоянная боковая навигация (desktop) ==== */
+.desktopSidebar {
+  display: none; /* включается в @media ниже */
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 0;
+  background: #f7f7f7;
+  border-right: 1px solid #d7d7d7;
+}
+.desktopBrand {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.desktopNavBtn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  color: #666;
+}
+.desktopNavBtn:hover { background: #ececec; }
+.desktopNavBtn.active { background: #e2f6ea; color: #07C160; }
+.desktopNavIcon { font-size: 20px; }
+.desktopNavBtn .navBadge { top: 2px; right: 2px; }
+.desktopSidebarSpacer { flex: 1; }
+.desktopProfileBtn { margin-bottom: 4px; }
+
+/* ==== Заглушка правой колонки, пока чат не открыт (desktop) ==== */
+#detailEmptyState {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  background: #f5f5f5;
+  color: #aaa;
+  text-align: center;
+  padding: 0 40px;
+}
+.detailEmptyIcon { font-size: 34px; opacity: 0.6; margin-bottom: 4px; }
+.detailEmptyTitle { font-size: 15px; font-weight: 600; color: #888; }
+.detailEmptyText { font-size: 13px; max-width: 260px; }
+
+/* ==== Desktop: полноэкранный layout из трёх колонок ==== */
+@media (min-width: 900px) {
+  .app {
+    display: grid;
+    grid-template-columns: 72px 340px 1fr;
+    grid-template-rows: 100%;
+  }
+  .desktopSidebar { display: flex; grid-column: 1; grid-row: 1; }
+
+  /* Мобильная нижняя навигация на десктопе не нужна — есть боковая панель */
+  .bottomNav { display: none; }
+
+  /* Вкладки "Чаты / Друзья / Найти" — всегда в средней колонке,
+     видимость управляется классом mainTabActive (см. script.js),
+     а не .active, чтобы список оставался на экране одновременно с чатом. */
+  #contactsScreen, #friendsScreen, #searchScreen {
+    display: none;
+    grid-column: 2;
+    grid-row: 1;
+    height: 100%;
+    border-right: 1px solid #d7d7d7;
+  }
+  #contactsScreen.mainTabActive, #friendsScreen.mainTabActive, #searchScreen.mainTabActive {
+    display: flex;
+  }
+
+  /* Открытый чат / просмотр профиля / мой профиль — всегда в правой колонке */
+  #chatScreen, #viewProfileScreen, #profileScreen {
+    display: none;
+    grid-column: 3;
+    grid-row: 1;
+    height: 100%;
+  }
+  #chatScreen.detailActive, #viewProfileScreen.detailActive, #profileScreen.detailActive {
+    display: flex;
+  }
+
+  #detailEmptyState { grid-column: 3; grid-row: 1; }
+  .app.noDetail #detailEmptyState { display: flex; }
+
+  /* Экраны входа и заполнения профиля занимают всё приложение целиком */
+  #authScreen, #profileSetupScreen {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+  }
+  .app.authOrSetup .desktopSidebar,
+  .app.authOrSetup #detailEmptyState {
+    display: none;
+  }
+}
 
 /* ==== WeChat-style header ==== */
 .wxHeader {
