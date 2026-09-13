@@ -8,7 +8,24 @@
 </head>
 <body>
 
-<div class="app">
+<div class="app authOrSetup noDetail">
+
+  <!-- Постоянная боковая навигация (только для широких экранов, см. styles.css) -->
+  <nav class="desktopSidebar" id="desktopSidebar">
+    <div class="desktopBrand" title="Чат друзей">💬</div>
+    <button class="desktopNavBtn active" id="desktopNavChatsBtn" title="Чаты">
+      <span class="desktopNavIcon">💬</span>
+    </button>
+    <button class="desktopNavBtn" id="desktopNavFriendsBtn" title="Друзья">
+      <span class="desktopNavIcon">👥</span>
+      <span class="navBadge" id="friendsBadgeDesktop" hidden></span>
+    </button>
+    <button class="desktopNavBtn" id="desktopNavSearchBtn" title="Найти">
+      <span class="desktopNavIcon">🔍</span>
+    </button>
+    <div class="desktopSidebarSpacer"></div>
+    <div class="avatarBtn desktopProfileBtn" id="desktopAvatarBtn" title="Мой профиль"></div>
+  </nav>
 
   <!-- Экран входа / регистрации -->
   <div id="authScreen" class="screen active">
@@ -216,6 +233,13 @@
       <button class="primaryBtn" id="saveProfileBtn">Сохранить</button>
       <button class="secondaryBtn" id="logoutBtn">Выйти из аккаунта</button>
     </div>
+  </div>
+
+  <!-- Заглушка правой колонки на desktop, пока не открыт чат/профиль -->
+  <div id="detailEmptyState">
+    <div class="detailEmptyIcon">💬</div>
+    <div class="detailEmptyTitle">Выберите чат</div>
+    <div class="detailEmptyText">Откройте переписку слева или найдите новых людей во вкладке «Найти»</div>
   </div>
 
 </div>
