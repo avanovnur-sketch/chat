@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, doc, setDoc, getDoc, deleteDoc, runTransaction,
-  query, orderBy, limit, onSnapshot, serverTimestamp
+  getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, deleteDoc, runTransaction,
+  query, where, orderBy, limit, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence,
@@ -49,15 +49,55 @@ let myProfile = {
 const authScreen = document.getElementById("authScreen");
 const profileSetupScreen = document.getElementById("profileSetupScreen");
 const contactsScreen = document.getElementById("contactsScreen");
+const friendsScreen = document.getElementById("friendsScreen");
+const searchScreen = document.getElementById("searchScreen");
 const chatScreen = document.getElementById("chatScreen");
 const profileScreen = document.getElementById("profileScreen");
+const viewProfileScreen = document.getElementById("viewProfileScreen");
+
+const ALL_SCREENS = [authScreen, profileSetupScreen, contactsScreen, friendsScreen, searchScreen, chatScreen, profileScreen, viewProfileScreen];
+const MAIN_TAB_SCREENS = [contactsScreen, friendsScreen, searchScreen];
+let lastMainScreen = contactsScreen;
 
 function showScreen(el) {
-  [authScreen, profileSetupScreen, contactsScreen, chatScreen, profileScreen].forEach(function (s) {
-    s.classList.remove("active");
-  });
+  ALL_SCREENS.forEach(function (s) { s.classList.remove("active"); });
   el.classList.add("active");
+  if (MAIN_TAB_SCREENS.indexOf(el) !== -1) {
+    lastMainScreen = el;
+    updateNavActiveStates();
+  }
 }
+
+function updateNavActiveStates() {
+  const navSets = [
+    [document.getElementById("navChatsBtn"), document.getElementById("navFriendsBtn"), document.getElementById("navSearchBtn")],
+    [document.getElementById("navChatsBtn2"), document.getElementById("navFriendsBtn2"), document.getElementById("navSearchBtn2")],
+    [document.getElementById("navChatsBtn3"), document.getElementById("navFriendsBtn3"), document.getElementById("navSearchBtn3")]
+  ];
+  const activeIdx = lastMainScreen === contactsScreen ? 0 : (lastMainScreen === friendsScreen ? 1 : 2);
+  navSets.forEach(function (set) {
+    set.forEach(function (btn, idx) {
+      if (!btn) return;
+      btn.classList.toggle("active", idx === activeIdx);
+    });
+  });
+}
+
+function wireNavButtons() {
+  ["navChatsBtn", "navChatsBtn2", "navChatsBtn3"].forEach(function (id) {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener("click", function () { showScreen(contactsScreen); });
+  });
+  ["navFriendsBtn", "navFriendsBtn2", "navFriendsBtn3"].forEach(function (id) {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener("click", function () { showScreen(friendsScreen); });
+  });
+  ["navSearchBtn", "navSearchBtn2", "navSearchBtn3"].forEach(function (id) {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener("click", function () { showScreen(searchScreen); });
+  });
+}
+wireNavButtons();
 
 // ==== DOM: авторизация ====
 const tabLoginBtn = document.getElementById("tabLoginBtn");
@@ -377,6 +417,7 @@ setupSaveBtn.addEventListener("click", async function () {
 
   const profileData = {
     name: name,
+    nameLower: name.toLowerCase(),
     username: username,
     status: setupStatusInput.value.trim(),
     bio: setupBioInput.value.trim(),
@@ -396,6 +437,7 @@ setupSaveBtn.addEventListener("click", async function () {
     updateHeaderAvatar();
     showScreen(contactsScreen);
     startContactsListener();
+    startRelationshipListeners();
   } catch (err) {
     console.error("Не удалось сохранить профиль:", err);
     setupErr.textContent = (err && err.message === "USERNAME_TAKEN")
@@ -429,9 +471,13 @@ wireUsernameHint(editUsernameInput, editUsernameHint, function () { return myPro
 
 function updateHeaderAvatar() {
   applyAvatarVisual(headerAvatarBtn, myProfile);
+  const friendsHeaderAvatarBtn = document.getElementById("friendsHeaderAvatarBtn");
+  const searchHeaderAvatarBtn = document.getElementById("searchHeaderAvatarBtn");
+  if (friendsHeaderAvatarBtn) applyAvatarVisual(friendsHeaderAvatarBtn, myProfile);
+  if (searchHeaderAvatarBtn) applyAvatarVisual(searchHeaderAvatarBtn, myProfile);
 }
 
-headerAvatarBtn.addEventListener("click", function () {
+function openMyProfileScreen() {
   editState = { avatarIdx: myProfile.avatarIdx || 0, photoData: myProfile.photoData || null };
   editNickInput.value = myProfile.name || "";
   editUsernameInput.value = myProfile.username || "";
@@ -445,10 +491,14 @@ headerAvatarBtn.addEventListener("click", function () {
   editErr.textContent = "";
   buildAvatarPicker(editAvatarPicker, editState, function () {});
   showScreen(profileScreen);
+}
+
+[headerAvatarBtn, document.getElementById("friendsHeaderAvatarBtn"), document.getElementById("searchHeaderAvatarBtn")].forEach(function (btn) {
+  if (btn) btn.addEventListener("click", openMyProfileScreen);
 });
 
 profileBackBtn.addEventListener("click", function () {
-  showScreen(contactsScreen);
+  showScreen(lastMainScreen);
 });
 
 saveProfileBtn.addEventListener("click", async function () {
@@ -463,6 +513,7 @@ saveProfileBtn.addEventListener("click", async function () {
 
   const profileData = {
     name: trimmedName,
+    nameLower: trimmedName.toLowerCase(),
     username: username,
     status: editStatusInput.value.trim(),
     bio: editBioInput.value.trim(),
@@ -480,7 +531,7 @@ saveProfileBtn.addEventListener("click", async function () {
     await saveProfileWithUsername(profileData, myProfile.username);
     myProfile = profileData;
     updateHeaderAvatar();
-    showScreen(contactsScreen);
+    showScreen(lastMainScreen);
   } catch (err) {
     console.error("Не удалось сохранить профиль:", err);
     editErr.textContent = (err && err.message === "USERNAME_TAKEN")
@@ -497,6 +548,421 @@ logoutBtn.addEventListener("click", async function () {
   } catch (err) {
     console.error("Ошибка выхода:", err);
   }
+});
+
+// ==== Этап 2: друзья, заявки, блокировки ====
+const friendsMap = {};        // otherUid -> true
+const sentRequestsMap = {};   // otherUid -> requestId
+const incomingRequestsMap = {}; // requestId -> fromUid
+const blockedByMeMap = {};    // otherUid -> true (я заблокировал их)
+const blockedMeMap = {};      // otherUid -> true (они заблокировали меня)
+
+let friendshipsUnsub = null;
+let sentRequestsUnsub = null;
+let incomingRequestsUnsub = null;
+let blocksByMeUnsub = null;
+let blocksOnMeUnsub = null;
+
+function friendshipDocId(uidA, uidB) {
+  return [uidA, uidB].sort().join("_");
+}
+
+function startRelationshipListeners() {
+  const friendshipsRef = collection(db, "friendships");
+  friendshipsUnsub = onSnapshot(query(friendshipsRef, where("uids", "array-contains", myUserId)), function (snapshot) {
+    Object.keys(friendsMap).forEach(function (k) { delete friendsMap[k]; });
+    snapshot.forEach(function (docSnap) {
+      const uids = docSnap.data().uids || [];
+      const other = uids[0] === myUserId ? uids[1] : uids[0];
+      if (other) friendsMap[other] = true;
+    });
+    renderFriendsScreen();
+    renderViewProfileActions();
+  }, function (err) { console.error("Ошибка загрузки друзей:", err); });
+
+  const requestsRef = collection(db, "friendRequests");
+
+  sentRequestsUnsub = onSnapshot(query(requestsRef, where("fromUid", "==", myUserId)), function (snapshot) {
+    Object.keys(sentRequestsMap).forEach(function (k) { delete sentRequestsMap[k]; });
+    snapshot.forEach(function (docSnap) {
+      const d = docSnap.data();
+      if (d.status === "pending") sentRequestsMap[d.toUid] = docSnap.id;
+    });
+    renderViewProfileActions();
+  }, function (err) { console.error("Ошибка загрузки заявок:", err); });
+
+  incomingRequestsUnsub = onSnapshot(query(requestsRef, where("toUid", "==", myUserId)), function (snapshot) {
+    Object.keys(incomingRequestsMap).forEach(function (k) { delete incomingRequestsMap[k]; });
+    snapshot.forEach(function (docSnap) {
+      const d = docSnap.data();
+      if (d.status === "pending") incomingRequestsMap[docSnap.id] = d.fromUid;
+    });
+    renderFriendsScreen();
+    renderViewProfileActions();
+  }, function (err) { console.error("Ошибка загрузки входящих заявок:", err); });
+
+  const blocksRef = collection(db, "blocks");
+
+  blocksByMeUnsub = onSnapshot(query(blocksRef, where("blockerUid", "==", myUserId)), function (snapshot) {
+    Object.keys(blockedByMeMap).forEach(function (k) { delete blockedByMeMap[k]; });
+    snapshot.forEach(function (docSnap) { blockedByMeMap[docSnap.data().blockedUid] = true; });
+    renderViewProfileActions();
+  }, function (err) { console.error("Ошибка загрузки блокировок:", err); });
+
+  blocksOnMeUnsub = onSnapshot(query(blocksRef, where("blockedUid", "==", myUserId)), function (snapshot) {
+    Object.keys(blockedMeMap).forEach(function (k) { delete blockedMeMap[k]; });
+    snapshot.forEach(function (docSnap) { blockedMeMap[docSnap.data().blockerUid] = true; });
+  }, function (err) { console.error("Ошибка загрузки блокировок:", err); });
+}
+
+function stopRelationshipListeners() {
+  [friendshipsUnsub, sentRequestsUnsub, incomingRequestsUnsub, blocksByMeUnsub, blocksOnMeUnsub].forEach(function (unsub) {
+    if (unsub) unsub();
+  });
+  friendshipsUnsub = sentRequestsUnsub = incomingRequestsUnsub = blocksByMeUnsub = blocksOnMeUnsub = null;
+  [friendsMap, sentRequestsMap, incomingRequestsMap, blockedByMeMap, blockedMeMap].forEach(function (m) {
+    Object.keys(m).forEach(function (k) { delete m[k]; });
+  });
+}
+
+async function sendFriendRequest(otherUid) {
+  await addDoc(collection(db, "friendRequests"), {
+    fromUid: myUserId,
+    toUid: otherUid,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+}
+
+async function acceptFriendRequest(requestId, fromUid) {
+  await runTransaction(db, async function (tx) {
+    tx.delete(doc(db, "friendRequests", requestId));
+    tx.set(doc(db, "friendships", friendshipDocId(myUserId, fromUid)), {
+      uids: [myUserId, fromUid],
+      createdAt: serverTimestamp()
+    });
+  });
+}
+
+async function declineFriendRequest(requestId) {
+  await deleteDoc(doc(db, "friendRequests", requestId));
+}
+
+async function removeFriend(otherUid) {
+  await deleteDoc(doc(db, "friendships", friendshipDocId(myUserId, otherUid)));
+}
+
+async function blockUser(otherUid) {
+  await runTransaction(db, async function (tx) {
+    tx.set(doc(db, "blocks", myUserId + "_" + otherUid), {
+      blockerUid: myUserId,
+      blockedUid: otherUid,
+      createdAt: serverTimestamp()
+    });
+    tx.delete(doc(db, "friendships", friendshipDocId(myUserId, otherUid)));
+    const mySentId = sentRequestsMap[otherUid];
+    if (mySentId) tx.delete(doc(db, "friendRequests", mySentId));
+  });
+  const incomingEntry = Object.keys(incomingRequestsMap).find(function (rid) { return incomingRequestsMap[rid] === otherUid; });
+  if (incomingEntry) await declineFriendRequest(incomingEntry);
+}
+
+async function unblockUser(otherUid) {
+  await deleteDoc(doc(db, "blocks", myUserId + "_" + otherUid));
+}
+
+// ==== Экран "Друзья" ====
+const incomingRequestsSection = document.getElementById("incomingRequestsSection");
+const incomingRequestsList = document.getElementById("incomingRequestsList");
+const friendsList = document.getElementById("friendsList");
+const friendsBadges = [document.getElementById("friendsBadge"), document.getElementById("friendsBadge2"), document.getElementById("friendsBadge3")];
+
+function renderFriendsScreen() {
+  const incomingIds = Object.keys(incomingRequestsMap);
+
+  friendsBadges.forEach(function (b) {
+    if (!b) return;
+    if (incomingIds.length > 0) { b.hidden = false; b.textContent = String(incomingIds.length); }
+    else { b.hidden = true; }
+  });
+
+  if (incomingIds.length === 0) {
+    incomingRequestsSection.hidden = true;
+    incomingRequestsList.innerHTML = "";
+  } else {
+    incomingRequestsSection.hidden = false;
+    incomingRequestsList.innerHTML = "";
+    incomingIds.forEach(function (requestId) {
+      const fromUid = incomingRequestsMap[requestId];
+      const data = contactsMap[fromUid];
+      if (!data) return;
+      const row = document.createElement("div");
+      row.className = "friendRow";
+
+      const avatarEl = document.createElement("div");
+      avatarEl.className = "contactAvatar";
+      applyAvatarVisual(avatarEl, data);
+
+      const info = document.createElement("div");
+      info.className = "friendRowInfo";
+      info.innerHTML = '<div class="contactName">' + escapeHtml(data.name || "Без имени") + '</div>' +
+        '<div class="contactStatus">@' + escapeHtml(data.username || "") + '</div>';
+      info.addEventListener("click", function () { openViewProfile(fromUid, data); });
+
+      const actions = document.createElement("div");
+      actions.className = "friendRowActions";
+      const acceptBtn = document.createElement("button");
+      acceptBtn.className = "smallBtn primary";
+      acceptBtn.textContent = "Принять";
+      acceptBtn.addEventListener("click", function () { acceptFriendRequest(requestId, fromUid).catch(function (e) { console.error(e); }); });
+      const declineBtn = document.createElement("button");
+      declineBtn.className = "smallBtn";
+      declineBtn.textContent = "Откл.";
+      declineBtn.addEventListener("click", function () { declineFriendRequest(requestId).catch(function (e) { console.error(e); }); });
+      actions.appendChild(acceptBtn);
+      actions.appendChild(declineBtn);
+
+      row.appendChild(avatarEl);
+      row.appendChild(info);
+      row.appendChild(actions);
+      incomingRequestsList.appendChild(row);
+    });
+  }
+
+  const friendUids = Object.keys(friendsMap);
+  if (friendUids.length === 0) {
+    friendsList.innerHTML = '<div class="emptyHint">У тебя пока нет друзей. Найди их во вкладке «Найти»!</div>';
+    return;
+  }
+  friendsList.innerHTML = "";
+  friendUids.forEach(function (uid) {
+    const data = contactsMap[uid];
+    if (!data) return;
+    const row = document.createElement("div");
+    row.className = "friendRow";
+
+    const avatarEl = document.createElement("div");
+    avatarEl.className = "contactAvatar";
+    applyAvatarVisual(avatarEl, data);
+
+    const info = document.createElement("div");
+    info.className = "friendRowInfo";
+    info.innerHTML = '<div class="contactName">' + escapeHtml(data.name || "Без имени") + '</div>' +
+      '<div class="contactStatus">@' + escapeHtml(data.username || "") + '</div>';
+    info.addEventListener("click", function () { openViewProfile(uid, data); });
+
+    const actions = document.createElement("div");
+    actions.className = "friendRowActions";
+    const msgBtn = document.createElement("button");
+    msgBtn.className = "smallBtn primary";
+    msgBtn.textContent = "Написать";
+    msgBtn.addEventListener("click", function () { openChat(uid, data); });
+    actions.appendChild(msgBtn);
+
+    row.appendChild(avatarEl);
+    row.appendChild(info);
+    row.appendChild(actions);
+    friendsList.appendChild(row);
+  });
+}
+
+// ==== Экран "Найти друзей" ====
+const searchInput = document.getElementById("searchInput");
+const searchResults = document.getElementById("searchResults");
+let searchDebounceTimer = null;
+
+searchInput.addEventListener("input", function () {
+  const term = searchInput.value.trim();
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  if (!term) {
+    searchResults.innerHTML = '<div class="emptyHint">Начни вводить имя или username, чтобы найти людей.</div>';
+    return;
+  }
+  searchResults.innerHTML = '<div class="emptyHint">Ищу…</div>';
+  searchDebounceTimer = setTimeout(function () { runSearch(term); }, 400);
+});
+
+async function runSearch(term) {
+  const termLower = term.toLowerCase().replace(/^@/, "");
+  const usersRef = collection(db, "users");
+  const foundMap = {};
+
+  try {
+    const byName = await getDocs(query(usersRef, orderBy("nameLower"), where("nameLower", ">=", termLower), where("nameLower", "<", termLower + "\uf8ff"), limit(20)));
+    byName.forEach(function (docSnap) { foundMap[docSnap.id] = docSnap.data(); });
+
+    const byUsername = await getDocs(query(usersRef, orderBy("username"), where("username", ">=", termLower), where("username", "<", termLower + "\uf8ff"), limit(20)));
+    byUsername.forEach(function (docSnap) { foundMap[docSnap.id] = docSnap.data(); });
+  } catch (err) {
+    console.error("Ошибка поиска:", err);
+    searchResults.innerHTML = '<div class="emptyHint">Не удалось выполнить поиск</div>';
+    return;
+  }
+
+  if (searchInput.value.trim().toLowerCase().replace(/^@/, "") !== termLower) return; // ввод уже изменился
+
+  const results = Object.keys(foundMap)
+    .filter(function (uid) { return uid !== myUserId && !blockedMeMap[uid] && !blockedByMeMap[uid]; })
+    .map(function (uid) { return { uid: uid, data: foundMap[uid] }; });
+
+  if (results.length === 0) {
+    searchResults.innerHTML = '<div class="emptyHint">Никого не нашлось</div>';
+    return;
+  }
+
+  searchResults.innerHTML = "";
+  results.forEach(function (r) {
+    contactsMap[r.uid] = r.data; // пополняем общий кэш профилей
+    const row = document.createElement("div");
+    row.className = "friendRow";
+
+    const avatarEl = document.createElement("div");
+    avatarEl.className = "contactAvatar";
+    applyAvatarVisual(avatarEl, r.data);
+
+    const info = document.createElement("div");
+    info.className = "friendRowInfo";
+    info.innerHTML = '<div class="contactName">' + escapeHtml(r.data.name || "Без имени") + '</div>' +
+      '<div class="contactStatus">@' + escapeHtml(r.data.username || "") + (r.data.bio ? " · " + escapeHtml(r.data.bio) : "") + '</div>';
+    info.addEventListener("click", function () { openViewProfile(r.uid, r.data); });
+
+    const actions = document.createElement("div");
+    actions.className = "friendRowActions";
+    actions.appendChild(buildRelationshipButton(r.uid));
+
+    row.appendChild(avatarEl);
+    row.appendChild(info);
+    row.appendChild(actions);
+    searchResults.appendChild(row);
+  });
+}
+
+function buildRelationshipButton(otherUid) {
+  const btn = document.createElement("button");
+  btn.className = "smallBtn";
+  if (friendsMap[otherUid]) {
+    btn.textContent = "Вы друзья";
+    btn.disabled = true;
+  } else if (sentRequestsMap[otherUid]) {
+    btn.textContent = "Заявка отправлена";
+    btn.disabled = true;
+  } else {
+    btn.className = "smallBtn primary";
+    btn.textContent = "Добавить";
+    btn.addEventListener("click", function () {
+      btn.disabled = true;
+      btn.textContent = "Заявка отправлена";
+      sendFriendRequest(otherUid).catch(function (err) {
+        console.error("Ошибка отправки заявки:", err);
+        btn.disabled = false;
+        btn.textContent = "Добавить";
+      });
+    });
+  }
+  return btn;
+}
+
+// ==== Экран профиля другого пользователя ====
+const viewProfileBackBtn = document.getElementById("viewProfileBackBtn");
+const viewProfileAvatar = document.getElementById("viewProfileAvatar");
+const viewProfileName = document.getElementById("viewProfileName");
+const viewProfileUsername = document.getElementById("viewProfileUsername");
+const viewProfileBio = document.getElementById("viewProfileBio");
+const viewProfileMeta = document.getElementById("viewProfileMeta");
+const viewProfileInterests = document.getElementById("viewProfileInterests");
+const viewProfileErr = document.getElementById("viewProfileErr");
+const viewMessageBtn = document.getElementById("viewMessageBtn");
+const viewAddFriendBtn = document.getElementById("viewAddFriendBtn");
+const viewPendingBtn = document.getElementById("viewPendingBtn");
+const viewAcceptBtn = document.getElementById("viewAcceptBtn");
+const viewDeclineBtn = document.getElementById("viewDeclineBtn");
+const viewRemoveFriendBtn = document.getElementById("viewRemoveFriendBtn");
+const viewBlockBtn = document.getElementById("viewBlockBtn");
+const viewUnblockBtn = document.getElementById("viewUnblockBtn");
+
+let viewedUid = null;
+let viewedData = null;
+
+function openViewProfile(otherUid, data) {
+  viewedUid = otherUid;
+  viewedData = data;
+  applyAvatarVisual(viewProfileAvatar, data);
+  viewProfileName.textContent = data.name || "Без имени";
+  viewProfileUsername.textContent = data.username ? "@" + data.username : "";
+  viewProfileBio.textContent = data.bio || "";
+  viewProfileMeta.innerHTML = "";
+  if (data.city) viewProfileMeta.innerHTML += '<span>📍 ' + escapeHtml(data.city) + '</span>';
+  viewProfileInterests.innerHTML = (data.interests || []).map(function (i) {
+    return '<span class="interestChip">' + escapeHtml(i) + '</span>';
+  }).join("");
+  viewProfileErr.textContent = "";
+  renderViewProfileActions();
+  showScreen(viewProfileScreen);
+}
+
+function renderViewProfileActions() {
+  if (!viewedUid) return;
+  const otherUid = viewedUid;
+  [viewMessageBtn, viewAddFriendBtn, viewPendingBtn, viewAcceptBtn, viewDeclineBtn, viewRemoveFriendBtn, viewBlockBtn, viewUnblockBtn]
+    .forEach(function (b) { b.hidden = true; });
+
+  if (blockedByMeMap[otherUid]) {
+    viewUnblockBtn.hidden = false;
+    return;
+  }
+
+  const incomingEntry = Object.keys(incomingRequestsMap).find(function (rid) { return incomingRequestsMap[rid] === otherUid; });
+
+  if (friendsMap[otherUid]) {
+    viewMessageBtn.hidden = false;
+    viewRemoveFriendBtn.hidden = false;
+  } else if (incomingEntry) {
+    viewAcceptBtn.hidden = false;
+    viewDeclineBtn.hidden = false;
+    viewAcceptBtn.onclick = function () {
+      acceptFriendRequest(incomingEntry, otherUid).catch(function (e) { viewProfileErr.textContent = "Ошибка"; console.error(e); });
+    };
+    viewDeclineBtn.onclick = function () {
+      declineFriendRequest(incomingEntry).catch(function (e) { viewProfileErr.textContent = "Ошибка"; console.error(e); });
+    };
+  } else if (sentRequestsMap[otherUid]) {
+    viewPendingBtn.hidden = false;
+  } else {
+    viewAddFriendBtn.hidden = false;
+  }
+
+  viewBlockBtn.hidden = false;
+}
+
+viewProfileBackBtn.addEventListener("click", function () { showScreen(lastMainScreen); });
+
+viewMessageBtn.addEventListener("click", function () { if (viewedUid) openChat(viewedUid, viewedData); });
+
+viewAddFriendBtn.addEventListener("click", function () {
+  if (!viewedUid) return;
+  viewAddFriendBtn.disabled = true;
+  sendFriendRequest(viewedUid).catch(function (err) {
+    console.error("Ошибка отправки заявки:", err);
+    viewProfileErr.textContent = "Не удалось отправить заявку";
+    viewAddFriendBtn.disabled = false;
+  });
+});
+
+viewRemoveFriendBtn.addEventListener("click", function () {
+  if (!viewedUid) return;
+  if (!confirm("Удалить из друзей?")) return;
+  removeFriend(viewedUid).catch(function (err) { console.error(err); viewProfileErr.textContent = "Не удалось удалить"; });
+});
+
+viewBlockBtn.addEventListener("click", function () {
+  if (!viewedUid) return;
+  if (!confirm("Заблокировать пользователя? Он больше не сможет писать вам и добавлять в друзья.")) return;
+  blockUser(viewedUid).catch(function (err) { console.error(err); viewProfileErr.textContent = "Не удалось заблокировать"; });
+});
+
+viewUnblockBtn.addEventListener("click", function () {
+  if (!viewedUid) return;
+  unblockUser(viewedUid).catch(function (err) { console.error(err); viewProfileErr.textContent = "Не удалось разблокировать"; });
 });
 
 // ==== Список контактов ====
@@ -522,6 +988,7 @@ function startContactsListener() {
     if (count === 0) {
       contactsList.innerHTML = '<div class="emptyHint">Пока никого нет. Позови друзей открыть эту страницу и создать профиль!</div>';
     }
+    renderFriendsScreen();
   }, function (error) {
     console.error("Ошибка загрузки контактов:", error);
   });
@@ -583,7 +1050,7 @@ function openChat(contactId, data) {
 backBtn.addEventListener("click", function () {
   if (messagesUnsub) { messagesUnsub(); messagesUnsub = null; }
   currentContactId = null;
-  showScreen(contactsScreen);
+  showScreen(lastMainScreen);
 });
 
 function startMessagesListener() {
@@ -723,6 +1190,7 @@ function escapeHtml(str) {
 onAuthStateChanged(auth, async function (user) {
   if (messagesUnsub) { messagesUnsub(); messagesUnsub = null; }
   if (contactsUnsub) { contactsUnsub(); contactsUnsub = null; }
+  stopRelationshipListeners();
 
   if (!user) {
     myUserId = null;
@@ -754,6 +1222,7 @@ onAuthStateChanged(auth, async function (user) {
       updateHeaderAvatar();
       showScreen(contactsScreen);
       startContactsListener();
+      startRelationshipListeners();
     } else {
       const prefillName = user.email ? user.email.split("@")[0] : "";
       openProfileSetup(prefillName);
