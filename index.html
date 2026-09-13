@@ -61,7 +61,7 @@
     <button class="primaryBtn" id="setupSaveBtn">Продолжить</button>
   </div>
 
-  <!-- Экран списка контактов -->
+  <!-- Экран списка контактов ("Чаты") -->
   <div id="contactsScreen" class="screen">
     <header class="wxHeader">
       <h1>Чаты</h1>
@@ -70,6 +70,53 @@
     <div id="contactsList" class="contactsList">
       <div class="emptyHint">Пока никого нет. Позови друзей открыть эту страницу и создать профиль!</div>
     </div>
+    <nav class="bottomNav">
+      <button class="navBtn active" id="navChatsBtn"><span>💬</span>Чаты</button>
+      <button class="navBtn" id="navFriendsBtn"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge" hidden></span></button>
+      <button class="navBtn" id="navSearchBtn"><span>🔍</span>Найти</button>
+    </nav>
+  </div>
+
+  <!-- Экран "Друзья" -->
+  <div id="friendsScreen" class="screen">
+    <header class="wxHeader">
+      <h1>Друзья</h1>
+      <div class="avatarBtn" id="friendsHeaderAvatarBtn" title="Профиль"></div>
+    </header>
+    <div class="friendsScroll">
+      <div id="incomingRequestsSection" hidden>
+        <div class="sectionTitle">Заявки в друзья</div>
+        <div id="incomingRequestsList"></div>
+      </div>
+      <div class="sectionTitle">Мои друзья</div>
+      <div id="friendsList">
+        <div class="emptyHint">У тебя пока нет друзей. Найди их во вкладке «Найти»!</div>
+      </div>
+    </div>
+    <nav class="bottomNav">
+      <button class="navBtn" id="navChatsBtn2"><span>💬</span>Чаты</button>
+      <button class="navBtn active" id="navFriendsBtn2"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge2" hidden></span></button>
+      <button class="navBtn" id="navSearchBtn2"><span>🔍</span>Найти</button>
+    </nav>
+  </div>
+
+  <!-- Экран "Найти друзей" -->
+  <div id="searchScreen" class="screen">
+    <header class="wxHeader">
+      <h1>Найти друзей</h1>
+      <div class="avatarBtn" id="searchHeaderAvatarBtn" title="Профиль"></div>
+    </header>
+    <div class="searchBar">
+      <input id="searchInput" type="text" placeholder="Имя или @username" autocomplete="off" maxlength="30">
+    </div>
+    <div id="searchResults" class="friendsScroll">
+      <div class="emptyHint">Начни вводить имя или username, чтобы найти людей.</div>
+    </div>
+    <nav class="bottomNav">
+      <button class="navBtn" id="navChatsBtn3"><span>💬</span>Чаты</button>
+      <button class="navBtn" id="navFriendsBtn3"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge3" hidden></span></button>
+      <button class="navBtn active" id="navSearchBtn3"><span>🔍</span>Найти</button>
+    </nav>
   </div>
 
   <!-- Экран переписки -->
@@ -91,6 +138,35 @@
       <button id="sendBtn" type="submit">Отпр.</button>
     </form>
     <div id="uploadStatus" class="uploadStatus"></div>
+  </div>
+
+  <!-- Экран профиля другого пользователя -->
+  <div id="viewProfileScreen" class="screen">
+    <header class="wxHeader chatHeader">
+      <button id="viewProfileBackBtn" class="iconBtn">←</button>
+      <div class="chatHeaderInfo">
+        <div>Профиль</div>
+      </div>
+    </header>
+    <div class="profileScroll">
+      <div class="viewAvatar" id="viewProfileAvatar"></div>
+      <div class="viewName" id="viewProfileName"></div>
+      <div class="viewUsername" id="viewProfileUsername"></div>
+      <div class="viewBio" id="viewProfileBio"></div>
+      <div class="viewMeta" id="viewProfileMeta"></div>
+      <div class="viewInterests" id="viewProfileInterests"></div>
+
+      <div class="err" id="viewProfileErr"></div>
+
+      <button class="primaryBtn" id="viewMessageBtn" hidden>Написать сообщение</button>
+      <button class="primaryBtn" id="viewAddFriendBtn" hidden>Добавить в друзья</button>
+      <button class="secondaryBtn" id="viewPendingBtn" hidden disabled>Заявка отправлена</button>
+      <button class="primaryBtn" id="viewAcceptBtn" hidden>Принять заявку</button>
+      <button class="secondaryBtn" id="viewDeclineBtn" hidden>Отклонить заявку</button>
+      <button class="secondaryBtn" id="viewRemoveFriendBtn" hidden>Удалить из друзей</button>
+      <button class="secondaryBtn dangerBtn" id="viewBlockBtn" hidden>Заблокировать</button>
+      <button class="secondaryBtn" id="viewUnblockBtn" hidden>Разблокировать</button>
+    </div>
   </div>
 
   <!-- Экран "Мой профиль" (просмотр / редактирование) -->
