@@ -10,29 +10,69 @@
 
 <div class="app">
 
-  <!-- Экран входа (создание профиля) -->
-  <div id="loginScreen" class="screen active">
+  <!-- Экран входа / регистрации -->
+  <div id="authScreen" class="screen active">
     <h2>Привет! 👋</h2>
-    <p>Создай свой профиль, чтобы зайти в чат</p>
-    <div class="avatarPicker" id="loginAvatarPicker"></div>
-    <input id="nickInput" type="text" placeholder="Твоё имя" maxlength="20" autocomplete="off">
-    <input id="statusInput" type="text" placeholder="Статус (необязательно)" maxlength="40" autocomplete="off">
-    <div class="err" id="loginErr"></div>
-    <button id="joinBtn">Войти в чат</button>
+
+    <div class="authTabs">
+      <button type="button" class="authTabBtn active" id="tabLoginBtn">Вход</button>
+      <button type="button" class="authTabBtn" id="tabRegisterBtn">Регистрация</button>
+    </div>
+
+    <input id="emailInput" type="email" placeholder="Email" autocomplete="email">
+    <input id="passwordInput" type="password" placeholder="Пароль" autocomplete="current-password">
+
+    <div class="err" id="authErr"></div>
+    <button class="primaryBtn" id="authSubmitBtn">Войти</button>
+
+    <div class="orDivider"><span>или</span></div>
+
+    <button class="googleBtn" id="googleBtn">
+      <span class="googleIcon">G</span> Войти через Google
+    </button>
   </div>
 
-  <!-- Экран списка контактов (как в WeChat) -->
+  <!-- Экран заполнения профиля (первый раз после регистрации) -->
+  <div id="profileSetupScreen" class="screen">
+    <h2>Создай профиль</h2>
+    <p>Это увидят другие пользователи</p>
+
+    <div class="avatarPicker" id="setupAvatarPicker"></div>
+
+    <input id="setupNickInput" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
+
+    <div class="fieldWithHint">
+      <input id="setupUsernameInput" type="text" placeholder="Username (латиница, цифры, _)" maxlength="20" autocomplete="off">
+      <div class="fieldHint" id="setupUsernameHint"></div>
+    </div>
+
+    <textarea id="setupBioInput" placeholder="О себе (необязательно)" maxlength="150" rows="2"></textarea>
+    <input id="setupCityInput" type="text" placeholder="Город (необязательно)" maxlength="40" autocomplete="off">
+    <input id="setupInterestsInput" type="text" placeholder="Интересы через запятую (необязательно)" maxlength="120" autocomplete="off">
+
+    <div class="fieldRow">
+      <input id="setupBirthDateInput" type="date" title="Дата рождения">
+      <input id="setupPhoneInput" type="tel" placeholder="Телефон (необязательно)" maxlength="20" autocomplete="off">
+    </div>
+
+    <input id="setupStatusInput" type="text" placeholder="Статус — короткая фраза (необязательно)" maxlength="40" autocomplete="off">
+
+    <div class="err" id="setupErr"></div>
+    <button class="primaryBtn" id="setupSaveBtn">Продолжить</button>
+  </div>
+
+  <!-- Экран списка контактов -->
   <div id="contactsScreen" class="screen">
     <header class="wxHeader">
       <h1>Чаты</h1>
-      <div class="avatarBtn" id="headerAvatarBtn" title="Профиль">🙂</div>
+      <div class="avatarBtn" id="headerAvatarBtn" title="Профиль"></div>
     </header>
     <div id="contactsList" class="contactsList">
-      <div id="contactsEmpty" class="emptyHint">Пока никого нет. Позови друзей открыть эту страницу и создать профиль!</div>
+      <div class="emptyHint">Пока никого нет. Позови друзей открыть эту страницу и создать профиль!</div>
     </div>
   </div>
 
-  <!-- Экран переписки с конкретным контактом -->
+  <!-- Экран переписки -->
   <div id="chatScreen" class="screen">
     <header class="wxHeader chatHeader">
       <button id="backBtn" class="iconBtn">←</button>
@@ -42,7 +82,7 @@
       </div>
     </header>
     <div id="messages">
-      <div id="emptyState" class="emptyHint">Сообщений пока нет. Напиши первым!</div>
+      <div class="emptyHint">Сообщений пока нет. Напиши первым!</div>
     </div>
     <form id="msgForm">
       <button type="button" id="attachBtn" class="iconBtn attachBtn" title="Фото">📷</button>
@@ -53,22 +93,59 @@
     <div id="uploadStatus" class="uploadStatus"></div>
   </div>
 
-</div>
+  <!-- Экран "Мой профиль" (просмотр / редактирование) -->
+  <div id="profileScreen" class="screen">
+    <header class="wxHeader chatHeader">
+      <button id="profileBackBtn" class="iconBtn">←</button>
+      <div class="chatHeaderInfo">
+        <div>Мой профиль</div>
+      </div>
+    </header>
+    <div class="profileScroll">
+      <div class="avatarPicker" id="editAvatarPicker"></div>
 
-<!-- Модалка профиля -->
-<div class="modalOverlay" id="profileModal">
-  <div class="modalBox">
-    <h3>Мой профиль</h3>
-    <div class="avatarPicker" id="editAvatarPicker"></div>
-    <input id="editNickInput" type="text" placeholder="Твоё имя" maxlength="20" autocomplete="off">
-    <input id="editStatusInput" type="text" placeholder="Статус (необязательно)" maxlength="40" autocomplete="off">
-    <div class="err" id="editErr"></div>
-    <button class="primaryBtn" id="saveProfileBtn">Сохранить</button>
-    <div class="modalRow">
-      <button class="secondaryBtn" id="closeProfileBtn">Закрыть</button>
+      <label class="fieldLabel">Имя</label>
+      <input id="editNickInput" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
+
+      <label class="fieldLabel">Username</label>
+      <div class="fieldWithHint">
+        <input id="editUsernameInput" type="text" placeholder="username" maxlength="20" autocomplete="off">
+        <div class="fieldHint" id="editUsernameHint"></div>
+      </div>
+
+      <label class="fieldLabel">О себе</label>
+      <textarea id="editBioInput" placeholder="О себе" maxlength="150" rows="2"></textarea>
+
+      <label class="fieldLabel">Город</label>
+      <input id="editCityInput" type="text" placeholder="Город" maxlength="40" autocomplete="off">
+
+      <label class="fieldLabel">Интересы</label>
+      <input id="editInterestsInput" type="text" placeholder="Через запятую" maxlength="120" autocomplete="off">
+
+      <div class="fieldRow">
+        <div class="fieldCol">
+          <label class="fieldLabel">Дата рождения</label>
+          <input id="editBirthDateInput" type="date">
+        </div>
+        <div class="fieldCol">
+          <label class="fieldLabel">Телефон</label>
+          <input id="editPhoneInput" type="tel" placeholder="Телефон" maxlength="20" autocomplete="off">
+        </div>
+      </div>
+
+      <label class="fieldLabel">Статус</label>
+      <input id="editStatusInput" type="text" placeholder="Короткая фраза" maxlength="40" autocomplete="off">
+
+      <div class="err" id="editErr"></div>
+      <button class="primaryBtn" id="saveProfileBtn">Сохранить</button>
+      <button class="secondaryBtn" id="logoutBtn">Выйти из аккаунта</button>
     </div>
   </div>
+
 </div>
+
+<!-- Скрытый инпут для загрузки фото профиля (общий для обоих аватар-пикеров) -->
+<input id="avatarFileInput" type="file" accept="image/*" hidden>
 
 <script type="module" src="script.js"></script>
 </body>
