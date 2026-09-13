@@ -1,252 +1,812 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Чат друзей</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Мессенджер</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<div class="app authOrSetup noDetail">
+<!-- ═══════════════════════════════════════════
+     AUTH SCREENS
+═══════════════════════════════════════════ -->
+<div id="authWrapper" class="auth-wrapper">
 
-  <!-- Постоянная боковая навигация (только для широких экранов, см. styles.css) -->
-  <nav class="desktopSidebar" id="desktopSidebar">
-    <div class="desktopBrand" title="Чат друзей">💬</div>
-    <button class="desktopNavBtn active" id="desktopNavChatsBtn" title="Чаты">
-      <span class="desktopNavIcon">💬</span>
+  <!-- Welcome -->
+  <div id="screenWelcome" class="auth-screen active">
+    <div class="auth-logo">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <h1 class="auth-title">Мессенджер</h1>
+    <p class="auth-subtitle">Общайтесь, знакомьтесь, дружите</p>
+    <button class="btn-primary" id="btnGoLogin">Войти</button>
+    <button class="btn-secondary" id="btnGoRegister">Создать аккаунт</button>
+  </div>
+
+  <!-- Login -->
+  <div id="screenLogin" class="auth-screen">
+    <button class="auth-back" id="btnLoginBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <button class="desktopNavBtn" id="desktopNavFriendsBtn" title="Друзья">
-      <span class="desktopNavIcon">👥</span>
-      <span class="navBadge" id="friendsBadgeDesktop" hidden></span>
+    <h2 class="auth-heading">Вход</h2>
+    <div class="form-group">
+      <label class="form-label">Email или номер телефона</label>
+      <input id="loginEmail" class="form-input" type="text" placeholder="email@example.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Пароль</label>
+      <div class="input-password-wrap">
+        <input id="loginPassword" class="form-input" type="password" placeholder="••••••••" autocomplete="current-password" />
+        <button type="button" class="btn-toggle-pass" id="btnToggleLoginPass">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="auth-err" id="loginErr"></div>
+    <button class="btn-primary" id="btnLogin">Войти</button>
+    <div class="auth-divider"><span>или</span></div>
+    <button class="btn-google" id="btnGoogleLogin">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Войти через Google
     </button>
-    <button class="desktopNavBtn" id="desktopNavSearchBtn" title="Найти">
-      <span class="desktopNavIcon">🔍</span>
+    <button class="btn-link" id="btnForgotPass">Забыли пароль?</button>
+    <p class="auth-switch">Нет аккаунта? <button class="btn-link-inline" id="btnSwitchToRegister">Создать</button></p>
+  </div>
+
+  <!-- Register step 1: credentials -->
+  <div id="screenRegister" class="auth-screen">
+    <button class="auth-back" id="btnRegisterBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </button>
-    <div class="desktopSidebarSpacer"></div>
-    <div class="avatarBtn desktopProfileBtn" id="desktopAvatarBtn" title="Мой профиль"></div>
+    <h2 class="auth-heading">Регистрация</h2>
+    <p class="auth-step-label">Шаг 1 из 3</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input id="regEmail" class="form-input" type="email" placeholder="email@example.com" autocomplete="email" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Пароль</label>
+      <div class="input-password-wrap">
+        <input id="regPassword" class="form-input" type="password" placeholder="Минимум 6 символов" autocomplete="new-password" />
+        <button type="button" class="btn-toggle-pass" id="btnToggleRegPass">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="auth-err" id="regErr"></div>
+    <button class="btn-primary" id="btnRegNext">Далее</button>
+    <div class="auth-divider"><span>или</span></div>
+    <button class="btn-google" id="btnGoogleRegister">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Войти через Google
+    </button>
+    <p class="auth-switch">Уже есть аккаунт? <button class="btn-link-inline" id="btnSwitchToLogin">Войти</button></p>
+  </div>
+
+  <!-- Register step 2: profile info -->
+  <div id="screenRegProfile" class="auth-screen">
+    <button class="auth-back" id="btnRegProfileBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <h2 class="auth-heading">Профиль</h2>
+    <p class="auth-step-label">Шаг 2 из 3</p>
+    <div class="form-group">
+      <label class="form-label">Имя</label>
+      <input id="regName" class="form-input" type="text" placeholder="Ваше имя" maxlength="40" autocomplete="given-name" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Дата рождения</label>
+      <input id="regBirth" class="form-input" type="date" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Номер телефона <span class="form-optional">(необязательно)</span></label>
+      <input id="regPhone" class="form-input" type="tel" placeholder="+7 999 123 45 67" autocomplete="tel" />
+    </div>
+    <div class="auth-err" id="regProfileErr"></div>
+    <button class="btn-primary" id="btnRegProfileNext">Далее</button>
+  </div>
+
+  <!-- Register step 3: username + interests -->
+  <div id="screenRegUsername" class="auth-screen">
+    <button class="auth-back" id="btnRegUsernameBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <h2 class="auth-heading">Имя пользователя</h2>
+    <p class="auth-step-label">Шаг 3 из 3</p>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <div class="input-prefix-wrap">
+        <span class="input-prefix">@</span>
+        <input id="regUsername" class="form-input with-prefix" type="text" placeholder="username" maxlength="30" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="username-hint" id="usernameHint"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Город <span class="form-optional">(необязательно)</span></label>
+      <input id="regCity" class="form-input" type="text" placeholder="Бишкек" maxlength="40" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Интересы</label>
+      <div class="interests-grid" id="interestsPicker">
+        <button type="button" class="interest-tag" data-interest="programming">💻 Программирование</button>
+        <button type="button" class="interest-tag" data-interest="games">🎮 Игры</button>
+        <button type="button" class="interest-tag" data-interest="music">🎵 Музыка</button>
+        <button type="button" class="interest-tag" data-interest="movies">🎬 Кино</button>
+        <button type="button" class="interest-tag" data-interest="sport">⚽ Спорт</button>
+        <button type="button" class="interest-tag" data-interest="travel">✈️ Путешествия</button>
+        <button type="button" class="interest-tag" data-interest="books">📚 Книги</button>
+        <button type="button" class="interest-tag" data-interest="art">🎨 Искусство</button>
+        <button type="button" class="interest-tag" data-interest="cooking">🍕 Еда</button>
+        <button type="button" class="interest-tag" data-interest="fitness">💪 Фитнес</button>
+        <button type="button" class="interest-tag" data-interest="photography">📷 Фото</button>
+        <button type="button" class="interest-tag" data-interest="design">🖌️ Дизайн</button>
+      </div>
+    </div>
+    <div class="auth-err" id="regUsernameErr"></div>
+    <button class="btn-primary" id="btnRegFinish">Создать аккаунт</button>
+  </div>
+
+  <!-- Forgot password -->
+  <div id="screenForgot" class="auth-screen">
+    <button class="auth-back" id="btnForgotBack">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </button>
+    <h2 class="auth-heading">Сброс пароля</h2>
+    <p class="auth-subtitle">Введите email и мы отправим ссылку для сброса</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input id="forgotEmail" class="form-input" type="email" placeholder="email@example.com" />
+    </div>
+    <div class="auth-err" id="forgotErr"></div>
+    <div class="auth-success" id="forgotSuccess"></div>
+    <button class="btn-primary" id="btnForgotSubmit">Отправить</button>
+  </div>
+
+</div><!-- /authWrapper -->
+
+
+<!-- ═══════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════ -->
+<div id="appWrapper" class="app-wrapper hidden">
+
+  <!-- SIDEBAR (desktop) -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <!-- My avatar -->
+      <div class="sidebar-avatar" id="sidebarAvatar">
+        <span class="sidebar-avatar-initials" id="sidebarInitials">?</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" data-tab="chats" title="Чаты">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">Чаты</span>
+        <span class="nav-badge hidden" id="badgeChats"></span>
+      </button>
+      <button class="nav-item" data-tab="friends" title="Друзья">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Друзья</span>
+        <span class="nav-badge hidden" id="badgeFriends"></span>
+      </button>
+      <button class="nav-item" data-tab="dating" title="Знакомства">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="nav-label">Знакомства</span>
+      </button>
+      <button class="nav-item" data-tab="search" title="Найти">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <span class="nav-label">Найти</span>
+      </button>
+      <button class="nav-item" data-tab="notifications" title="Уведомления">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="nav-label">Уведомления</span>
+        <span class="nav-badge hidden" id="badgeNotifications"></span>
+      </button>
+    </div>
+    <div class="sidebar-bottom">
+      <button class="nav-item" data-tab="profile" title="Профиль">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Профиль</span>
+      </button>
+      <button class="nav-item" data-tab="settings" title="Настройки">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="nav-label">Настройки</span>
+      </button>
+    </div>
   </nav>
 
-  <!-- Экран входа / регистрации -->
-  <div id="authScreen" class="screen active">
-    <h2>Привет! 👋</h2>
+  <!-- MAIN CONTENT AREA -->
+  <div class="content-area" id="contentArea">
 
-    <div class="authTabs">
-      <button type="button" class="authTabBtn active" id="tabLoginBtn">Вход</button>
-      <button type="button" class="authTabBtn" id="tabRegisterBtn">Регистрация</button>
+    <!-- ── CHATS TAB ────────────────────────────────── -->
+    <div class="tab-panel active" id="tabChats">
+      <div class="panel-split" id="chatsSplit">
+        <!-- Chat list -->
+        <div class="panel-list" id="chatListPanel">
+          <div class="panel-header">
+            <h2 class="panel-title">Чаты</h2>
+            <button class="icon-btn" id="btnNewChatSearch" title="Найти пользователя">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </button>
+          </div>
+          <div class="panel-search hidden" id="chatSearchBar">
+            <input class="search-input" id="chatSearchInput" type="text" placeholder="Поиск в чатах…" />
+          </div>
+          <div class="chat-list" id="chatList">
+            <div class="empty-state" id="chatEmpty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <p class="empty-title">Нет сообщений</p>
+              <p class="empty-sub">Найдите новых людей во вкладке «Найти» или «Знакомства»</p>
+            </div>
+          </div>
+        </div>
+        <!-- Conversation view -->
+        <div class="panel-convo hidden" id="convoPanel">
+          <div class="convo-header" id="convoHeader">
+            <button class="icon-btn back-btn" id="btnConvoBack">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            </button>
+            <div class="convo-header-avatar" id="convoAvatar"><span id="convoAvatarInitials"></span></div>
+            <div class="convo-header-info">
+              <div class="convo-name" id="convoName">—</div>
+              <div class="convo-status" id="convoStatus">
+                <span class="online-dot" id="convoOnlineDot"></span>
+                <span id="convoStatusText">не в сети</span>
+              </div>
+            </div>
+            <button class="icon-btn ml-auto" id="btnConvoMenu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </button>
+          </div>
+          <!-- Convo menu dropdown -->
+          <div class="dropdown hidden" id="convoMenuDropdown">
+            <button class="dropdown-item" id="btnClearChat">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Очистить чат
+            </button>
+            <button class="dropdown-item danger" id="btnDeleteChat">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Удалить чат
+            </button>
+            <button class="dropdown-item danger" id="btnBlockFromChat">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Заблокировать
+            </button>
+          </div>
+          <div class="messages-area" id="messagesArea">
+            <div class="empty-state" id="messagesEmpty">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <p class="empty-sub">Начните разговор</p>
+            </div>
+          </div>
+          <div class="typing-indicator hidden" id="typingIndicator">
+            <span id="typingText">печатает...</span>
+          </div>
+          <div class="reply-preview hidden" id="replyPreview">
+            <div class="reply-preview-inner">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
+              <span id="replyPreviewText"></span>
+            </div>
+            <button class="icon-btn sm" id="btnCancelReply">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <form class="msg-input-bar" id="msgForm">
+            <button type="button" class="icon-btn attach-btn" id="btnAttach">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt" class="hidden" />
+            <input class="msg-input" id="msgInput" type="text" placeholder="Написать сообщение…" autocomplete="off" maxlength="2000" />
+            <button type="button" class="icon-btn emoji-btn" id="btnEmoji">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <button type="submit" class="send-btn" id="sendBtn" disabled>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </form>
+          <!-- Emoji picker (simple) -->
+          <div class="emoji-picker hidden" id="emojiPicker">
+            <div class="emoji-grid" id="emojiGrid"></div>
+          </div>
+          <!-- Attach menu -->
+          <div class="attach-menu hidden" id="attachMenu">
+            <button class="attach-item" id="btnSendImage">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Фото
+            </button>
+            <button class="attach-item" id="btnSendFile">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              Файл
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <input id="emailInput" type="email" placeholder="Email" autocomplete="email">
-    <input id="passwordInput" type="password" placeholder="Пароль" autocomplete="current-password">
+    <!-- ── FRIENDS TAB ──────────────────────────────── -->
+    <div class="tab-panel" id="tabFriends">
+      <div class="panel-header">
+        <h2 class="panel-title">Друзья</h2>
+        <button class="icon-btn" id="btnFriendsSearch">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+      </div>
+      <div class="friends-tabs">
+        <button class="friends-tab-btn active" data-friends-tab="list">Мои друзья</button>
+        <button class="friends-tab-btn" data-friends-tab="incoming">
+          Заявки
+          <span class="tab-badge hidden" id="incomingBadge"></span>
+        </button>
+        <button class="friends-tab-btn" data-friends-tab="outgoing">Исходящие</button>
+      </div>
+      <div class="panel-search hidden" id="friendsSearchBar">
+        <input class="search-input" id="friendsSearchInput" type="text" placeholder="Поиск среди друзей…" />
+      </div>
+      <!-- My friends list -->
+      <div class="friends-tab-content active" id="friendsListContent">
+        <div class="list-container" id="friendsList">
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <p class="empty-title">Пока нет друзей</p>
+            <p class="empty-sub">Найдите новых людей во вкладке «Найти»</p>
+          </div>
+        </div>
+      </div>
+      <!-- Incoming requests -->
+      <div class="friends-tab-content" id="friendsIncomingContent">
+        <div class="list-container" id="incomingList">
+          <div class="empty-state">
+            <p class="empty-sub">Нет входящих заявок</p>
+          </div>
+        </div>
+      </div>
+      <!-- Outgoing requests -->
+      <div class="friends-tab-content" id="friendsOutgoingContent">
+        <div class="list-container" id="outgoingList">
+          <div class="empty-state">
+            <p class="empty-sub">Нет исходящих заявок</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="err" id="authErr"></div>
-    <button class="primaryBtn" id="authSubmitBtn">Войти</button>
+    <!-- ── DATING TAB ───────────────────────────────── -->
+    <div class="tab-panel" id="tabDating">
+      <div class="panel-header">
+        <h2 class="panel-title">Знакомства</h2>
+        <button class="icon-btn" id="btnDatingSettings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="dating-tabs">
+        <button class="dating-tab-btn active" data-dating-tab="discover">Анкеты</button>
+        <button class="dating-tab-btn" data-dating-tab="likes">Симпатии</button>
+      </div>
+      <!-- Discover -->
+      <div class="dating-tab-content active" id="datingDiscover">
+        <div class="cards-area" id="cardsArea">
+          <div class="empty-state" id="datingEmpty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <p class="empty-title">Анкеты закончились</p>
+            <p class="empty-sub">Загляните позже — появятся новые люди</p>
+          </div>
+        </div>
+        <div class="dating-actions hidden" id="datingActions">
+          <button class="dating-btn skip-btn" id="btnSkip">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <button class="dating-btn like-btn" id="btnLike">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Likes -->
+      <div class="dating-tab-content" id="datingLikes">
+        <div class="likes-tabs">
+          <button class="likes-tab-btn active" data-likes-tab="mutual">❤️ Взаимные</button>
+          <button class="likes-tab-btn" data-likes-tab="iLiked">Мне понравились</button>
+          <button class="likes-tab-btn" data-likes-tab="likedMe">Я понравился</button>
+        </div>
+        <div class="likes-tab-content active" id="likesMutual">
+          <div class="list-container" id="mutualList">
+            <div class="empty-state"><p class="empty-sub">Нет взаимных симпатий</p></div>
+          </div>
+        </div>
+        <div class="likes-tab-content" id="likesILiked">
+          <div class="list-container" id="iLikedList">
+            <div class="empty-state"><p class="empty-sub">Вы ещё никому не поставили ❤️</p></div>
+          </div>
+        </div>
+        <div class="likes-tab-content" id="likesLikedMe">
+          <div class="list-container" id="likedMeList">
+            <div class="empty-state"><p class="empty-sub">Вас пока никто не лайкнул</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="orDivider"><span>или</span></div>
+    <!-- ── SEARCH TAB ───────────────────────────────── -->
+    <div class="tab-panel" id="tabSearch">
+      <div class="panel-header">
+        <h2 class="panel-title">Найти людей</h2>
+      </div>
+      <div class="search-bar-wrap">
+        <div class="search-bar-inner">
+          <svg class="search-bar-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-bar-input" id="searchInput" type="text" placeholder="Поиск по имени или @username…" autocomplete="off" />
+          <button class="icon-btn sm hidden" id="btnSearchClear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="list-container" id="searchResults">
+        <div class="empty-state" id="searchEmpty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <p class="empty-title">Найдите нового человека</p>
+          <p class="empty-sub">Введите имя или @username</p>
+        </div>
+      </div>
+    </div>
 
-    <button class="googleBtn" id="googleBtn">
-      <span class="googleIcon">G</span> Войти через Google
+    <!-- ── NOTIFICATIONS TAB ────────────────────────── -->
+    <div class="tab-panel" id="tabNotifications">
+      <div class="panel-header">
+        <h2 class="panel-title">Уведомления</h2>
+        <button class="btn-text" id="btnMarkAllRead">Прочитать все</button>
+      </div>
+      <div class="list-container" id="notificationsList">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <p class="empty-title">Нет уведомлений</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE TAB ──────────────────────────────── -->
+    <div class="tab-panel" id="tabProfile">
+      <div class="profile-view" id="myProfileView">
+        <div class="profile-cover"></div>
+        <div class="profile-body">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="myProfileAvatar">
+              <span class="profile-avatar-initials" id="myProfileInitials">?</span>
+            </div>
+            <button class="profile-avatar-edit" id="btnEditAvatar" title="Изменить фото">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+          </div>
+          <h2 class="profile-name" id="myProfileName">—</h2>
+          <p class="profile-username" id="myProfileUsername">@—</p>
+          <p class="profile-meta" id="myProfileMeta"></p>
+          <p class="profile-bio" id="myProfileBio"></p>
+          <div class="profile-interests" id="myProfileInterests"></div>
+          <button class="btn-primary" id="btnEditProfile">Редактировать профиль</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS TAB ─────────────────────────────── -->
+    <div class="tab-panel" id="tabSettings">
+      <div class="panel-header">
+        <h2 class="panel-title">Настройки</h2>
+      </div>
+      <div class="settings-list">
+        <div class="settings-section">
+          <div class="settings-section-title">Аккаунт</div>
+          <button class="settings-item" id="btnSettingsEditProfile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Редактировать профиль
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="settings-item" id="btnSettingsPrivacy">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Приватность
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="settings-item" id="btnSettingsDating">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Настройки знакомств
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button class="settings-item" id="btnSettingsBlocked">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            Заблокированные
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Другое</div>
+          <button class="settings-item danger" id="btnLogout">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Выйти из аккаунта
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /contentArea -->
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bnav-item active" data-tab="chats">
+      <div class="bnav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="bnav-badge hidden" id="bnavBadgeChats"></span>
+      </div>
+      <span class="bnav-label">Чаты</span>
     </button>
-  </div>
-
-  <!-- Экран заполнения профиля (первый раз после регистрации) -->
-  <div id="profileSetupScreen" class="screen">
-    <h2>Создай профиль</h2>
-    <p>Это увидят другие пользователи</p>
-
-    <div class="avatarPicker" id="setupAvatarPicker"></div>
-
-    <input id="setupNickInput" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
-
-    <div class="fieldWithHint">
-      <input id="setupUsernameInput" type="text" placeholder="Username (латиница, цифры, _)" maxlength="20" autocomplete="off">
-      <div class="fieldHint" id="setupUsernameHint"></div>
-    </div>
-
-    <textarea id="setupBioInput" placeholder="О себе (необязательно)" maxlength="150" rows="2"></textarea>
-    <input id="setupCityInput" type="text" placeholder="Город (необязательно)" maxlength="40" autocomplete="off">
-    <input id="setupInterestsInput" type="text" placeholder="Интересы через запятую (необязательно)" maxlength="120" autocomplete="off">
-
-    <div class="fieldRow">
-      <input id="setupBirthDateInput" type="date" title="Дата рождения">
-      <input id="setupPhoneInput" type="tel" placeholder="Телефон (необязательно)" maxlength="20" autocomplete="off">
-    </div>
-
-    <input id="setupStatusInput" type="text" placeholder="Статус — короткая фраза (необязательно)" maxlength="40" autocomplete="off">
-
-    <div class="err" id="setupErr"></div>
-    <button class="primaryBtn" id="setupSaveBtn">Продолжить</button>
-  </div>
-
-  <!-- Экран списка контактов ("Чаты") -->
-  <div id="contactsScreen" class="screen">
-    <header class="wxHeader">
-      <h1>Чаты</h1>
-      <div class="avatarBtn" id="headerAvatarBtn" title="Профиль"></div>
-    </header>
-    <div id="contactsList" class="contactsList">
-      <div class="emptyHint">Пока никого нет. Позови друзей открыть эту страницу и создать профиль!</div>
-    </div>
-    <nav class="bottomNav">
-      <button class="navBtn active" id="navChatsBtn"><span>💬</span>Чаты</button>
-      <button class="navBtn" id="navFriendsBtn"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge" hidden></span></button>
-      <button class="navBtn" id="navSearchBtn"><span>🔍</span>Найти</button>
-    </nav>
-  </div>
-
-  <!-- Экран "Друзья" -->
-  <div id="friendsScreen" class="screen">
-    <header class="wxHeader">
-      <h1>Друзья</h1>
-      <div class="avatarBtn" id="friendsHeaderAvatarBtn" title="Профиль"></div>
-    </header>
-    <div class="friendsScroll">
-      <div id="incomingRequestsSection" hidden>
-        <div class="sectionTitle">Заявки в друзья</div>
-        <div id="incomingRequestsList"></div>
+    <button class="bnav-item" data-tab="friends">
+      <div class="bnav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="bnav-badge hidden" id="bnavBadgeFriends"></span>
       </div>
-      <div class="sectionTitle">Мои друзья</div>
-      <div id="friendsList">
-        <div class="emptyHint">У тебя пока нет друзей. Найди их во вкладке «Найти»!</div>
+      <span class="bnav-label">Друзья</span>
+    </button>
+    <button class="bnav-item" data-tab="dating">
+      <div class="bnav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       </div>
-    </div>
-    <nav class="bottomNav">
-      <button class="navBtn" id="navChatsBtn2"><span>💬</span>Чаты</button>
-      <button class="navBtn active" id="navFriendsBtn2"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge2" hidden></span></button>
-      <button class="navBtn" id="navSearchBtn2"><span>🔍</span>Найти</button>
-    </nav>
-  </div>
-
-  <!-- Экран "Найти друзей" -->
-  <div id="searchScreen" class="screen">
-    <header class="wxHeader">
-      <h1>Найти друзей</h1>
-      <div class="avatarBtn" id="searchHeaderAvatarBtn" title="Профиль"></div>
-    </header>
-    <div class="searchBar">
-      <input id="searchInput" type="text" placeholder="Имя или @username" autocomplete="off" maxlength="30">
-    </div>
-    <div id="searchResults" class="friendsScroll">
-      <div class="emptyHint">Начни вводить имя или username, чтобы найти людей.</div>
-    </div>
-    <nav class="bottomNav">
-      <button class="navBtn" id="navChatsBtn3"><span>💬</span>Чаты</button>
-      <button class="navBtn" id="navFriendsBtn3"><span>👥</span>Друзья<span class="navBadge" id="friendsBadge3" hidden></span></button>
-      <button class="navBtn active" id="navSearchBtn3"><span>🔍</span>Найти</button>
-    </nav>
-  </div>
-
-  <!-- Экран переписки -->
-  <div id="chatScreen" class="screen">
-    <header class="wxHeader chatHeader">
-      <button id="backBtn" class="iconBtn">←</button>
-      <div class="chatHeaderInfo">
-        <div id="chatContactName">Имя</div>
-        <div id="chatContactStatus"></div>
+      <span class="bnav-label">Знакомства</span>
+    </button>
+    <button class="bnav-item" data-tab="search">
+      <div class="bnav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </div>
-    </header>
-    <div id="messages">
-      <div class="emptyHint">Сообщений пока нет. Напиши первым!</div>
+      <span class="bnav-label">Найти</span>
+    </button>
+    <button class="bnav-item" data-tab="profile">
+      <div class="bnav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="bnav-badge hidden" id="bnavBadgeNotifications"></span>
+      </div>
+      <span class="bnav-label">Профиль</span>
+    </button>
+  </nav>
+
+</div><!-- /appWrapper -->
+
+
+<!-- ═══════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════ -->
+
+<!-- Edit Profile Modal -->
+<div class="modal-overlay hidden" id="editProfileModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Редактировать профиль</h3>
+      <button class="icon-btn" id="btnCloseEditProfile">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
-    <form id="msgForm">
-      <button type="button" id="attachBtn" class="iconBtn attachBtn" title="Фото">📷</button>
-      <input id="fileInput" type="file" accept="image/*" capture="environment" hidden>
-      <input id="msgInput" type="text" placeholder="Сообщение…" autocomplete="off" maxlength="500">
-      <button id="sendBtn" type="submit">Отпр.</button>
-    </form>
-    <div id="uploadStatus" class="uploadStatus"></div>
-  </div>
-
-  <!-- Экран профиля другого пользователя -->
-  <div id="viewProfileScreen" class="screen">
-    <header class="wxHeader chatHeader">
-      <button id="viewProfileBackBtn" class="iconBtn">←</button>
-      <div class="chatHeaderInfo">
-        <div>Профиль</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Имя</label>
+        <input id="editName" class="form-input" type="text" maxlength="40" />
       </div>
-    </header>
-    <div class="profileScroll">
-      <div class="viewAvatar" id="viewProfileAvatar"></div>
-      <div class="viewName" id="viewProfileName"></div>
-      <div class="viewUsername" id="viewProfileUsername"></div>
-      <div class="viewBio" id="viewProfileBio"></div>
-      <div class="viewMeta" id="viewProfileMeta"></div>
-      <div class="viewInterests" id="viewProfileInterests"></div>
-
-      <div class="err" id="viewProfileErr"></div>
-
-      <button class="primaryBtn" id="viewMessageBtn" hidden>Написать сообщение</button>
-      <button class="primaryBtn" id="viewAddFriendBtn" hidden>Добавить в друзья</button>
-      <button class="secondaryBtn" id="viewPendingBtn" hidden disabled>Заявка отправлена</button>
-      <button class="primaryBtn" id="viewAcceptBtn" hidden>Принять заявку</button>
-      <button class="secondaryBtn" id="viewDeclineBtn" hidden>Отклонить заявку</button>
-      <button class="secondaryBtn" id="viewRemoveFriendBtn" hidden>Удалить из друзей</button>
-      <button class="secondaryBtn dangerBtn" id="viewBlockBtn" hidden>Заблокировать</button>
-      <button class="secondaryBtn" id="viewUnblockBtn" hidden>Разблокировать</button>
-    </div>
-  </div>
-
-  <!-- Экран "Мой профиль" (просмотр / редактирование) -->
-  <div id="profileScreen" class="screen">
-    <header class="wxHeader chatHeader">
-      <button id="profileBackBtn" class="iconBtn">←</button>
-      <div class="chatHeaderInfo">
-        <div>Мой профиль</div>
-      </div>
-    </header>
-    <div class="profileScroll">
-      <div class="avatarPicker" id="editAvatarPicker"></div>
-
-      <label class="fieldLabel">Имя</label>
-      <input id="editNickInput" type="text" placeholder="Имя" maxlength="30" autocomplete="off">
-
-      <label class="fieldLabel">Username</label>
-      <div class="fieldWithHint">
-        <input id="editUsernameInput" type="text" placeholder="username" maxlength="20" autocomplete="off">
-        <div class="fieldHint" id="editUsernameHint"></div>
-      </div>
-
-      <label class="fieldLabel">О себе</label>
-      <textarea id="editBioInput" placeholder="О себе" maxlength="150" rows="2"></textarea>
-
-      <label class="fieldLabel">Город</label>
-      <input id="editCityInput" type="text" placeholder="Город" maxlength="40" autocomplete="off">
-
-      <label class="fieldLabel">Интересы</label>
-      <input id="editInterestsInput" type="text" placeholder="Через запятую" maxlength="120" autocomplete="off">
-
-      <div class="fieldRow">
-        <div class="fieldCol">
-          <label class="fieldLabel">Дата рождения</label>
-          <input id="editBirthDateInput" type="date">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-prefix-wrap">
+          <span class="input-prefix">@</span>
+          <input id="editUsername" class="form-input with-prefix" type="text" maxlength="30" spellcheck="false" />
         </div>
-        <div class="fieldCol">
-          <label class="fieldLabel">Телефон</label>
-          <input id="editPhoneInput" type="tel" placeholder="Телефон" maxlength="20" autocomplete="off">
+        <div class="username-hint" id="editUsernameHint"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Город</label>
+        <input id="editCity" class="form-input" type="text" maxlength="40" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">О себе</label>
+        <textarea id="editBio" class="form-input" rows="3" maxlength="200" placeholder="Расскажите о себе…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Интересы</label>
+        <div class="interests-grid" id="editInterestsPicker">
+          <button type="button" class="interest-tag" data-interest="programming">💻 Программирование</button>
+          <button type="button" class="interest-tag" data-interest="games">🎮 Игры</button>
+          <button type="button" class="interest-tag" data-interest="music">🎵 Музыка</button>
+          <button type="button" class="interest-tag" data-interest="movies">🎬 Кино</button>
+          <button type="button" class="interest-tag" data-interest="sport">⚽ Спорт</button>
+          <button type="button" class="interest-tag" data-interest="travel">✈️ Путешествия</button>
+          <button type="button" class="interest-tag" data-interest="books">📚 Книги</button>
+          <button type="button" class="interest-tag" data-interest="art">🎨 Искусство</button>
+          <button type="button" class="interest-tag" data-interest="cooking">🍕 Еда</button>
+          <button type="button" class="interest-tag" data-interest="fitness">💪 Фитнес</button>
+          <button type="button" class="interest-tag" data-interest="photography">📷 Фото</button>
+          <button type="button" class="interest-tag" data-interest="design">🖌️ Дизайн</button>
         </div>
       </div>
-
-      <label class="fieldLabel">Статус</label>
-      <input id="editStatusInput" type="text" placeholder="Короткая фраза" maxlength="40" autocomplete="off">
-
-      <div class="err" id="editErr"></div>
-      <button class="primaryBtn" id="saveProfileBtn">Сохранить</button>
-      <button class="secondaryBtn" id="logoutBtn">Выйти из аккаунта</button>
+      <div class="auth-err" id="editProfileErr"></div>
+      <button class="btn-primary" id="btnSaveProfile">Сохранить</button>
     </div>
   </div>
-
-  <!-- Заглушка правой колонки на desktop, пока не открыт чат/профиль -->
-  <div id="detailEmptyState">
-    <div class="detailEmptyIcon">💬</div>
-    <div class="detailEmptyTitle">Выберите чат</div>
-    <div class="detailEmptyText">Откройте переписку слева или найдите новых людей во вкладке «Найти»</div>
-  </div>
-
 </div>
 
-<!-- Скрытый инпут для загрузки фото профиля (общий для обоих аватар-пикеров) -->
-<input id="avatarFileInput" type="file" accept="image/*" hidden>
+<!-- User Profile Modal -->
+<div class="modal-overlay hidden" id="userProfileModal">
+  <div class="modal-box modal-box--profile">
+    <button class="icon-btn modal-close-abs" id="btnCloseUserProfile">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="profile-view-modal">
+      <div class="profile-avatar profile-avatar-lg" id="userModalAvatar">
+        <span class="profile-avatar-initials" id="userModalInitials">?</span>
+      </div>
+      <h3 class="profile-name" id="userModalName">—</h3>
+      <p class="profile-username" id="userModalUsername">@—</p>
+      <p class="profile-meta" id="userModalMeta"></p>
+      <p class="profile-bio" id="userModalBio"></p>
+      <div class="profile-interests" id="userModalInterests"></div>
+      <div class="user-profile-actions" id="userModalActions"></div>
+      <div class="user-profile-more">
+        <button class="btn-link danger-link" id="btnModalBlock">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          Заблокировать
+        </button>
+        <button class="btn-link danger-link" id="btnModalReport">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+          Пожаловаться
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-<script type="module" src="script.js"></script>
+<!-- Match Modal -->
+<div class="modal-overlay hidden" id="matchModal">
+  <div class="modal-box modal-box--match">
+    <div class="match-animation">
+      <div class="match-hearts">❤️</div>
+      <div class="match-avatars">
+        <div class="match-avatar" id="matchMyAvatar"><span id="matchMyInitials"></span></div>
+        <div class="match-avatar" id="matchTheirAvatar"><span id="matchTheirInitials"></span></div>
+      </div>
+      <h2 class="match-title">Взаимная симпатия!</h2>
+      <p class="match-sub">Вы понравились друг другу с <strong id="matchName"></strong></p>
+    </div>
+    <button class="btn-primary" id="btnMatchChat">Написать сообщение</button>
+    <button class="btn-secondary mt-8" id="btnMatchClose">Продолжить</button>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Подтвердите действие</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirmText" class="confirm-text"></p>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnConfirmCancel">Отмена</button>
+        <button class="btn-danger" id="btnConfirmOk">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div class="modal-overlay hidden" id="reportModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Пожаловаться</h3>
+      <button class="icon-btn" id="btnCloseReport">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="report-reasons">
+        <label class="report-reason"><input type="radio" name="reportReason" value="spam" /> Спам</label>
+        <label class="report-reason"><input type="radio" name="reportReason" value="abuse" /> Оскорбление</label>
+        <label class="report-reason"><input type="radio" name="reportReason" value="fraud" /> Мошенничество</label>
+        <label class="report-reason"><input type="radio" name="reportReason" value="inappropriate" /> Неподходящий контент</label>
+        <label class="report-reason"><input type="radio" name="reportReason" value="other" /> Другое</label>
+      </div>
+      <div class="auth-err" id="reportErr"></div>
+      <button class="btn-primary" id="btnSubmitReport">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Settings Modal -->
+<div class="modal-overlay hidden" id="privacyModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Приватность</h3>
+      <button class="icon-btn" id="btnClosePrivacy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="privacy-row">
+        <span>Кто может писать мне</span>
+        <select class="privacy-select" id="privacyMessages">
+          <option value="everyone">Все</option>
+          <option value="friends">Друзья</option>
+          <option value="nobody">Никто</option>
+        </select>
+      </div>
+      <div class="privacy-row">
+        <span>Кто видит мой онлайн</span>
+        <select class="privacy-select" id="privacyOnline">
+          <option value="everyone">Все</option>
+          <option value="friends">Друзья</option>
+          <option value="nobody">Никто</option>
+        </select>
+      </div>
+      <div class="privacy-row">
+        <span>Кто может добавлять в друзья</span>
+        <select class="privacy-select" id="privacyFriendReq">
+          <option value="everyone">Все</option>
+          <option value="friends">Друзья</option>
+          <option value="nobody">Никто</option>
+        </select>
+      </div>
+      <div class="privacy-row">
+        <span>Показывать в знакомствах</span>
+        <select class="privacy-select" id="privacyDating">
+          <option value="yes">Да</option>
+          <option value="no">Нет</option>
+        </select>
+      </div>
+      <button class="btn-primary mt-12" id="btnSavePrivacy">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Dating Settings Modal -->
+<div class="modal-overlay hidden" id="datingSettingsModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Настройки знакомств</h3>
+      <button class="icon-btn" id="btnCloseDatingSettings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Возраст: <span id="ageRangeLabel">18–99</span></label>
+        <div class="range-row">
+          <input type="range" id="ageMin" min="18" max="80" value="18" class="range-input" />
+          <input type="range" id="ageMax" min="18" max="80" value="80" class="range-input" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Город (оставьте пустым — любой)</label>
+        <input id="datingCityFilter" class="form-input" type="text" placeholder="Бишкек" />
+      </div>
+      <button class="btn-primary" id="btnSaveDatingSettings">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Blocked Users Modal -->
+<div class="modal-overlay hidden" id="blockedModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Заблокированные</h3>
+      <button class="icon-btn" id="btnCloseBlocked">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="list-container" id="blockedList">
+        <p class="empty-sub" style="text-align:center;padding:20px">Нет заблокированных пользователей</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<script type="module" src="./script.js"></script>
 </body>
 </html>
