@@ -66,13 +66,15 @@ function showScreen(el) {
     lastMainScreen = el;
     updateNavActiveStates();
   }
+  updateDesktopLayoutClasses(el);
 }
 
 function updateNavActiveStates() {
   const navSets = [
     [document.getElementById("navChatsBtn"), document.getElementById("navFriendsBtn"), document.getElementById("navSearchBtn")],
     [document.getElementById("navChatsBtn2"), document.getElementById("navFriendsBtn2"), document.getElementById("navSearchBtn2")],
-    [document.getElementById("navChatsBtn3"), document.getElementById("navFriendsBtn3"), document.getElementById("navSearchBtn3")]
+    [document.getElementById("navChatsBtn3"), document.getElementById("navFriendsBtn3"), document.getElementById("navSearchBtn3")],
+    [document.getElementById("desktopNavChatsBtn"), document.getElementById("desktopNavFriendsBtn"), document.getElementById("desktopNavSearchBtn")]
   ];
   const activeIdx = lastMainScreen === contactsScreen ? 0 : (lastMainScreen === friendsScreen ? 1 : 2);
   navSets.forEach(function (set) {
@@ -83,16 +85,41 @@ function updateNavActiveStates() {
   });
 }
 
+// ==== Полноэкранный desktop-layout (Этап 1) ====
+// На узких экранах (телефон) поведение не меняется: viden только .screen.active.
+// На широких экранах (см. styles.css, @media min-width: 900px) одновременно видны:
+// колонка навигации, колонка активной вкладки (Чаты/Друзья/Найти) и колонка деталей
+// (открытый чат / просмотр профиля / мой профиль). Эта функция просто расставляет
+// вспомогательные классы, которые задействует CSS — сама логика showScreen() не трогается,
+// поэтому мобильное поведение остаётся прежним.
+const DETAIL_SCREENS = [chatScreen, viewProfileScreen, profileScreen];
+const appEl = document.querySelector(".app");
+
+function updateDesktopLayoutClasses(activeEl) {
+  const isAuthOrSetup = (activeEl === authScreen || activeEl === profileSetupScreen);
+  appEl.classList.toggle("authOrSetup", isAuthOrSetup);
+
+  MAIN_TAB_SCREENS.forEach(function (s) {
+    s.classList.toggle("mainTabActive", s === lastMainScreen && !isAuthOrSetup);
+  });
+
+  const isDetail = DETAIL_SCREENS.indexOf(activeEl) !== -1;
+  DETAIL_SCREENS.forEach(function (s) {
+    s.classList.toggle("detailActive", isDetail && s === activeEl);
+  });
+  appEl.classList.toggle("noDetail", !isDetail);
+}
+
 function wireNavButtons() {
-  ["navChatsBtn", "navChatsBtn2", "navChatsBtn3"].forEach(function (id) {
+  ["navChatsBtn", "navChatsBtn2", "navChatsBtn3", "desktopNavChatsBtn"].forEach(function (id) {
     const btn = document.getElementById(id);
     if (btn) btn.addEventListener("click", function () { showScreen(contactsScreen); });
   });
-  ["navFriendsBtn", "navFriendsBtn2", "navFriendsBtn3"].forEach(function (id) {
+  ["navFriendsBtn", "navFriendsBtn2", "navFriendsBtn3", "desktopNavFriendsBtn"].forEach(function (id) {
     const btn = document.getElementById(id);
     if (btn) btn.addEventListener("click", function () { showScreen(friendsScreen); });
   });
-  ["navSearchBtn", "navSearchBtn2", "navSearchBtn3"].forEach(function (id) {
+  ["navSearchBtn", "navSearchBtn2", "navSearchBtn3", "desktopNavSearchBtn"].forEach(function (id) {
     const btn = document.getElementById(id);
     if (btn) btn.addEventListener("click", function () { showScreen(searchScreen); });
   });
@@ -473,8 +500,10 @@ function updateHeaderAvatar() {
   applyAvatarVisual(headerAvatarBtn, myProfile);
   const friendsHeaderAvatarBtn = document.getElementById("friendsHeaderAvatarBtn");
   const searchHeaderAvatarBtn = document.getElementById("searchHeaderAvatarBtn");
+  const desktopAvatarBtn = document.getElementById("desktopAvatarBtn");
   if (friendsHeaderAvatarBtn) applyAvatarVisual(friendsHeaderAvatarBtn, myProfile);
   if (searchHeaderAvatarBtn) applyAvatarVisual(searchHeaderAvatarBtn, myProfile);
+  if (desktopAvatarBtn) applyAvatarVisual(desktopAvatarBtn, myProfile);
 }
 
 function openMyProfileScreen() {
@@ -493,7 +522,7 @@ function openMyProfileScreen() {
   showScreen(profileScreen);
 }
 
-[headerAvatarBtn, document.getElementById("friendsHeaderAvatarBtn"), document.getElementById("searchHeaderAvatarBtn")].forEach(function (btn) {
+[headerAvatarBtn, document.getElementById("friendsHeaderAvatarBtn"), document.getElementById("searchHeaderAvatarBtn"), document.getElementById("desktopAvatarBtn")].forEach(function (btn) {
   if (btn) btn.addEventListener("click", openMyProfileScreen);
 });
 
@@ -675,7 +704,7 @@ async function unblockUser(otherUid) {
 const incomingRequestsSection = document.getElementById("incomingRequestsSection");
 const incomingRequestsList = document.getElementById("incomingRequestsList");
 const friendsList = document.getElementById("friendsList");
-const friendsBadges = [document.getElementById("friendsBadge"), document.getElementById("friendsBadge2"), document.getElementById("friendsBadge3")];
+const friendsBadges = [document.getElementById("friendsBadge"), document.getElementById("friendsBadge2"), document.getElementById("friendsBadge3"), document.getElementById("friendsBadgeDesktop")];
 
 function renderFriendsScreen() {
   const incomingIds = Object.keys(incomingRequestsMap);
