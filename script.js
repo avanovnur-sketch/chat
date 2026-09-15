@@ -530,15 +530,39 @@ function switchTab(tab) {
 function renderMyProfile() {
   if (!myProfile) return;
   const color = avatarColor(myProfile.uid);
-  // Sidebar
+  const photo = myProfile.photoURL || currentUser?.photoURL || null;
+
+  // Sidebar avatar
   const sa = $("sidebarAvatar");
-  sa.style.background = color;
-  $("sidebarInitials").textContent = initials(myProfile.displayName);
+  if (photo) {
+    sa.style.backgroundImage = `url(${photo})`;
+    sa.style.backgroundSize = "cover";
+    sa.style.backgroundPosition = "center";
+    sa.style.background = "transparent";
+    $("sidebarInitials").textContent = "";
+  } else {
+    sa.style.backgroundImage = "";
+    sa.style.background = color;
+    $("sidebarInitials").textContent = initials(myProfile.displayName);
+  }
+
   // Profile tab
   $("myProfileName").textContent = myProfile.displayName || "—";
   $("myProfileUsername").textContent = myProfile.username ? "@" + myProfile.username : "";
-  $("myProfileAvatar").style.background = color;
-  $("myProfileInitials").textContent = initials(myProfile.displayName);
+
+  // Profile avatar
+  const profileAv = $("myProfileAvatar");
+  if (photo) {
+    profileAv.style.backgroundImage = `url(${photo})`;
+    profileAv.style.backgroundSize = "cover";
+    profileAv.style.backgroundPosition = "center";
+    profileAv.style.background = "transparent";
+    $("myProfileInitials").textContent = "";
+  } else {
+    profileAv.style.backgroundImage = "";
+    profileAv.style.background = color;
+    $("myProfileInitials").textContent = initials(myProfile.displayName);
+  }
   const metaParts = [];
   if (myProfile.city) metaParts.push("📍 " + myProfile.city);
   if (myProfile.birthDate) { const age = calcAge(myProfile.birthDate); if (age) metaParts.push(age + " лет"); }
@@ -1933,3 +1957,88 @@ $("btnSavePrivacy").addEventListener("click", async () => {
   $("privacyModal").classList.add("hidden");
   showToast("Настройки приватности сохранены", "success");
 });
+
+
+// ═══════════════════════════════════════════════════════
+//  AVATAR UPLOAD
+// ═══════════════════════════════════════════════════════
+$("btnEditAvatar").addEventListener("click", () => {
+  $("avatarFileInput").click();
+});
+
+$("avatarFileInput").addEventListener("change", async e => {
+  const file = e.target.files[0];
+  $("avatarFileInput").value = "";
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    showToast("Выберите изображение", "error");
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("Файл слишком большой (макс. 5MB)", "error");
+    return;
+  }
+
+  showLoading();
+  try {
+    // Upload to Firebase Storage
+    const path = `avatars/${currentUser.uid}/${Date.now()}_${file.name}`;
+    const ref = storageRef(storage, path);
+    await uploadBytes(ref, file);
+    const url = await getDownloadURL(ref);
+
+    // Update Firebase Auth profile
+    await updateProfile(currentUser, { photoURL: url });
+
+    // Update Firestore
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      photoURL: url,
+      updatedAt: serverTimestamp()
+    });
+
+    // Update local state
+    myProfile.photoURL = url;
+
+    // Re-render profile with new photo
+    renderMyProfileAvatar(url);
+    showToast("Фото обновлено", "success");
+  } catch (err) {
+    console.error("Avatar upload error:", err);
+    showToast("Ошибка загрузки фото", "error");
+  } finally {
+    hideLoading();
+  }
+});
+
+function renderMyProfileAvatar(photoURL) {
+  const color = avatarColor(currentUser.uid);
+
+  // Profile tab avatar
+  const profileAv = $("myProfileAvatar");
+  if (photoURL) {
+    profileAv.style.backgroundImage = `url(${photoURL})`;
+    profileAv.style.backgroundSize = "cover";
+    profileAv.style.backgroundPosition = "center";
+    profileAv.style.background = "transparent";
+    $("myProfileInitials").textContent = "";
+  } else {
+    profileAv.style.backgroundImage = "";
+    profileAv.style.background = color;
+    $("myProfileInitials").textContent = initials(myProfile?.displayName || "?");
+  }
+
+  // Sidebar avatar
+  const sidebarAv = $("sidebarAvatar");
+  if (photoURL) {
+    sidebarAv.style.backgroundImage = `url(${photoURL})`;
+    sidebarAv.style.backgroundSize = "cover";
+    sidebarAv.style.backgroundPosition = "center";
+    sidebarAv.style.background = "transparent";
+    $("sidebarInitials").textContent = "";
+  } else {
+    sidebarAv.style.backgroundImage = "";
+    sidebarAv.style.background = color;
+    $("sidebarInitials").textContent = initials(myProfile?.displayName || "?");
+  }
+}
